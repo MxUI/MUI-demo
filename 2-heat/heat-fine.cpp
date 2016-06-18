@@ -20,6 +20,8 @@
  * .: place holder for illustrative purposes
  */
 
+// USAGE: mpirun -np 1 ./heat-coarse : -np 1 ./heat-fine
+
 int main( int argc, char ** argv ) {
     using namespace mui;
 
