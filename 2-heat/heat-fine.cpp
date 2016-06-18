@@ -27,7 +27,7 @@ int main( int argc, char ** argv ) {
 
     const static int N = 21;
     double u1[N], u2[N]; // note that it is not necessary to allocate space for node 0 & 20, but here I do it anyway to simplify coding
-    for ( int i = 1; i < 20; i++ ) u1[i] = 2 - i % 2; // spiky I.C.
+    for ( int i = 1; i < 20; i++ ) u1[i] = 2 - i % 2 + (i-1) * 0.1; // spiky, skewed I.C.
 
     uniface1d interface( "mpi://fine/ifs" );
 

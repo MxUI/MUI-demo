@@ -44,7 +44,7 @@ clear    = @(t) cla;
 redraw   = @(t) plot( solution{t}(:,1), solution{t}(:,2) );
 scatter1 = @(t) scatter( solution_coarse{t}(:,1), solution_coarse{t}(:,2), 'xr' );
 scatter2 = @(t) scatter( solution_fine{t}(:,1), solution_fine{t}(:,2), 'xb' );
-relim    = @(t) axis([0,11,0,2]);
+relim    = @(t) axis([0,11,0,4]);
 b.Callback = @(src,evt) cellfun(@feval, {clear, redraw, scatter1, scatter2, relim}, {0, floor(src.Value) + 1, floor(src.Value) + 1, floor(src.Value) + 1, 0})
 cellfun(@feval, {redraw, scatter1, scatter2, relim}, {1, 1, 1, 0})
 
