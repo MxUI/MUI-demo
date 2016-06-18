@@ -6,7 +6,8 @@
  */
 
 
-//#include "../mui/mui.h"
+// Standalone reference solver
+
 #include <algorithm>
 #include <fstream>
 
