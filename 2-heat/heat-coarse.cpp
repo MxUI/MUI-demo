@@ -24,7 +24,7 @@ int main( int argc, char ** argv ) {
     using namespace mui;
 
     const static int N = 12;
-	double u1[N], u2[N]; // note that it is not necessary to allocate space for node 5 & 6, but here I do it anyway to simplify coding
+    double u1[N], u2[N]; // note that it is not necessary to allocate space for node 5 & 6, but here I do it anyway to simplify coding
     for ( int i = 0; i <  4; i++ ) u1[i] = 0;
     for ( int i = 8; i < 12; i++ ) u1[i] = 0;
 
@@ -39,23 +39,23 @@ int main( int argc, char ** argv ) {
     for ( int i = 8; i < 12; i++ ) fout << i * H << '\t' << u[i] << '\n';
 
     for ( int t = 1; t <= 100; t ++ ) {
-    	printf("Coarse grid step %d\n", t);
+        printf( "Coarse grid step %d\n", t );
 
-    	// push data to the other solver
-    	interface.push( "u", 3 * H, u[3] );
-    	interface.push( "u", 8 * H, u[8] );
-    	interface.commit( t );
+        // push data to the other solver
+        interface.push( "u", 3 * H, u[3] );
+        interface.push( "u", 8 * H, u[8] );
+        interface.commit( t );
 
-    	// fetch data from the other solver
-    	sampler_gauss1d<double> s1( 1, 0.25 );
-    	chrono_sampler_exact1d  s2;
-    	u[4] = interface.fetch( "u", 4 * H, t, s1, s2 );
-    	u[7] = interface.fetch( "u", 7 * H, t, s1, s2 );
+        // fetch data from the other solver
+        sampler_gauss1d<double> s1( 1, 0.25 );
+        chrono_sampler_exact1d  s2;
+        u[4] = interface.fetch( "u", 4 * H, t, s1, s2 );
+        u[7] = interface.fetch( "u", 7 * H, t, s1, s2 );
 
-    	// calculate 'interior' points
-    	for(int i=1;i< 4;i++) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
-    	for(int i=8;i<11;i++) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
-    	// calculate 'boundary' points
+        // calculate 'interior' points
+        for ( int i = 1; i < 4; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
+        for ( int i = 8; i < 11; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
+        // calculate 'boundary' points
         v[    0] = u[    0] + k / ( H * H ) * ( u[1] + u[N - 1] - 2 * u[    0] );
         v[N - 1] = u[N - 1] + k / ( H * H ) * ( u[0] + u[N - 2] - 2 * u[N - 1] );
 

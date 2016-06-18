@@ -1,3 +1,4 @@
+%% Visualization for standalone run
 %% Load data
 f = fopen( 'solution.txt', 'r' );
 t = 0;
