@@ -1,0 +1,17 @@
+1 to compile
+gcc heat.c -o heat
+
+2 to run and output the data to file test.out
+
+./heat > test.out
+
+3 to plot using gnuplot
+
+a) open gnuplot by typing 
+
+gnuplot
+
+b) within gnuplot load plot.gb
+
+load plot.gb
+
