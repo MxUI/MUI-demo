@@ -3,6 +3,7 @@
 // Simplification and MUI integration by Yu-Hang Tang
 
 #include <cstdio>
+#include <fstream>
 #include "../mui/mui.h"
 
 /* Hybrid Lagrangian-Eulerian Simulation of Heat Conduction
@@ -40,41 +41,34 @@ int main() {
     const double L = 11;//box length for internal materia
 
     double u[N], x[N], du[N];
-    double rho = 1000.0; //density and mass: constants
+    double rho = 100.0; //density and mass: constants
     double kappa = 1.0;//conductivity: constant
     double cv = 1.0;//heat compacity at consant volume
     double dx = L / ( Ni + 1 ), rc = 2.5 * dx;
     double m = dx * rho;
-    double T_left = 0.0, T_right = 1.0;
     double dt = 0.25 * dx * dx / kappa;
 
     //initial conditions
     for ( int i = 0; i < N; i ++ ) {
         x[i] = ( i - N / 2 ) * dx;
-        u[i] = cv * ( i <= N / 2 ? T_left : T_right );
+        u[i] = cv * ( i <= N / 2 ? 0 : 1 );
+        if ( i >= N / 4 && i <= N * 3 / 4 ) u[i] += i % 2 * 0.5;
     }
 
-    sampler_gauss1d<double> gauss( rc, rc/2 );
-    chrono_sampler_exact1d  exact;
+    std::ofstream fout( "solution-sph.txt" );
 
     //time integration forward Euler scheme
-    for ( int k = 0; k < 10; k++ ) {
-
-    	for(int i: {3,4,N-5,N-4} ) {
-    		interface.push( "u", x[i], u[i] );
-    		printf("push %lf @ %lf\n", u[i], x[i]);
-    	}
+    for ( int k = 0; k < 100; k++ ) {
+        // push data to the other solver
+        for ( int i : {3, 4, N - 5, N - 4} ) interface.push( "u", x[i], u[i] );
         interface.commit( k );
 
-        for(int i: {0,1,N-2,N-1}) {
-        	u[i] = interface.fetch( "u", x[i], k, gauss, exact );
-        	printf("fetch %lf @ %lf\n", u[i], x[i]);
-        }
+        sampler_gauss1d<double> gauss( rc, rc / 2 );
+        chrono_sampler_exact1d  exact;
+        for ( int i : {0, 1, N - 2, N - 1} ) u[i] = interface.fetch( "u", x[i], k, gauss, exact );
 
         //reset du
-        for ( int i = 0; i < N; i ++ ) {
-            du[i] = 0.0;
-        }
+        for ( int i = 0; i < N; i ++ ) du[i] = 0.0;
 
         // N^2 brute-force pairwise evaluation
         for ( int i = 0; i < N - 1; i ++ ) {
@@ -93,9 +87,10 @@ int main() {
         //only update the internal material points
         for ( int i = No; i < N - No; i ++ ) u[i] += du[i];
 
-        if ( k % 1 == 0 ) {
-            for ( int i = 0; i < N; i ++ ) printf( "%f, %f\n", x[i], u[i] );
-            printf( "\n" );
+        if ( k % 10 == 0 ) {
+            printf( "SPH step %d\n", k );
+            for ( int i = No; i < N - No; i ++ ) fout << x[i] << '\t' << u[i] << std::endl;
+            fout << std::endl;
         }
     }
 

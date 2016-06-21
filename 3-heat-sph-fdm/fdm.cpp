@@ -26,40 +26,31 @@
 
 int main( int argc, char ** argv ) {
 
-	using namespace mui;
+    using namespace mui;
     uniface1d interface( "mpi://fdm/ifs" );
 
     const static int N = 16;
     double k = 0.0625, H = 1; // H: grid stride for the coarse/fine grid
-    auto i2x = [&](int i){ // convert grid index to position
-    	if ( i < 8 ) return -11.25 + i * H;
-    	else return 4.25 + ( i - 8 ) * H;
+    auto i2x = [&]( int i ) { // convert grid index to position
+        if ( i < 8 ) return -11.25 + i * H;
+        else return 4.25 + ( i - 8 ) * H;
     };
     double u1[N], u2[N]; // note that it is not necessary to allocate space for node 5 & 6, but here I do it anyway to simplify coding
     for ( int i = 0; i <  8; i++ ) u1[i] = 0;
     for ( int i = 8; i < 16; i++ ) u1[i] = 1;
     double * u = u1, *v = u2;
 
-    //std::ofstream fout( "solution-coarse.txt" );
-    auto &fout = std::cout;
+    std::ofstream fout( "solution-fdm.txt" );
 
-    for ( int t = 0; t < 10; t ++ ) {
-        printf( "Coarse grid step %d\n", t );
-
+    for ( int t = 0; t < 100; t ++ ) {
         // push data to the other solver
-        for (int i : {5,6,9,10} ) {
-        	interface.push( "u",  i2x(i), u[i] );
-        	printf("push: %lf @ %lf\n", u[i], i2x(i) );
-        }
+        for ( int i : {5, 6, 9, 10} ) interface.push( "u",  i2x( i ), u[i] );
         interface.commit( t );
 
         // fetch data from the other solver
         sampler_moving_average1d<double> avg( 1 );
         chrono_sampler_exact1d  exact;
-        for (int i : {7,8} ) {
-        	u[i] = interface.fetch( "u", i2x(i), t, avg, exact );
-        	printf("fetch %lf @ %lf\n", u[i], i2x(i) );
-        }
+        for ( int i : {7, 8} ) u[i] = interface.fetch( "u", i2x( i ), t, avg, exact );
 
         // calculate 'interior' points
         for ( int i = 1; i <  7; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
@@ -70,12 +61,14 @@ int main( int argc, char ** argv ) {
 
         // I/O
         std::swap( u, v );
-        if ( t % 1 == 0 ) {
-            fout << "TIMESTEP " << t << std::endl;
-            for ( int i = 0; i < 16; i++ ) fout << i2x(i) << '\t' << u[i  ] << '\n';
+        if ( t % 10 == 0 ) {
+            printf( "FDM step %d\n", t );
+            for ( int i = 0; i <  7; i++ ) fout << i2x( i ) << '\t' << u[i] << '\n';
+            for ( int i = 9; i < 16; i++ ) fout << i2x( i ) << '\t' << u[i] << '\n';
+            fout << std::endl;
         }
     }
-    //fout.close();
+    fout.close();
 
     return 0;
 }
