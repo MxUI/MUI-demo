@@ -4,19 +4,6 @@
 
 #include <cstdio>
 
-/* Hybrid Lagrangian-Eulerian Simulation of Heat Conduction
- * SPH-Finite Difference, PBC
- * SPH :                         o o o o o o o o o o o o o o o o o o o o o
- *                               0 1 2 3 4 5 6 7 8 9      .....         24
- *                               ^ ^ ^                               ^ ^ ^
- * FDM :    +---+---+---+---+---+---+---+                         +---+---+---+---+---+---+---+
- *          0   1   2   3   4   5   6   7                         8   9  10  11  12  13  14  15
- *                                      ^                         ^
- * +: grid points
- * o: SPH particles
- * ^: coupling interface
- */
-
 double cubic_spline_gradient( double r, double rc ) {
     const static double sigma  = 2.0 / 3.0; // for one diemension
     double h      = rc / 2.0;
@@ -28,7 +15,7 @@ double cubic_spline_gradient( double r, double rc ) {
     return w_g * coef_g;
 }
 
-main() {
+int main() {
 
     const int N = 19, Nint = 3;//number of inside/outside particles
     const int Ntotal = N + Nint * 2; //number of total particles
@@ -83,4 +70,6 @@ main() {
             printf( "\n" );
         }
     }
+
+    return 0;
 }
