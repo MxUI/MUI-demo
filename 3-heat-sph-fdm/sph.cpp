@@ -20,6 +20,8 @@
  * *: interface points - push
  */
 
+// USAGE: mpirun -np 1 ./sph : -np 1 ./fdm
+
 double cubic_spline_gradient( double r, double rc ) {
     const static double sigma  = 2.0 / 3.0; // for one diemension
     double h      = rc / 2.0;

@@ -24,6 +24,8 @@
  * *: interface points - push
  */
 
+// USAGE: mpirun -np 1 ./sph : -np 1 ./fdm
+
 int main( int argc, char ** argv ) {
 
     using namespace mui;
