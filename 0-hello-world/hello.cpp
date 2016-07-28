@@ -15,7 +15,8 @@ int main( int argc, char ** argv ) {
                 "n1, n2     : number of ranks for each 'subdomain'\n"
                 "URI format : mpi://domain-identifier/interface-identifier\n"
                 "value      : an arbitrary number\n\n"
-                "EXAMPLE: mpirun -np 1 %s mpi://domain1/ifs 0.618 : -np 1 %s mpi://domain2/ifs 1.414\n\n",
+                "EXAMPLE: mpirun -np 1 %s mpi://domain1/ifs 0.618 : -np 1 %s "
+                "mpi://domain2/ifs 1.414\n\n",
                 argv[0], argv[0], argv[0], argv[0] );
         exit( 0 );
     }
@@ -29,5 +30,3 @@ int main( int argc, char ** argv ) {
 
     return 0;
 }
-
-
