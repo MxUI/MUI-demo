@@ -15,6 +15,9 @@
 /* flow with a stagnation point in a square box
  * Yazdani, A., Deng, M., Caswell, B., & Karniadakis, G. E. (2016). Flow in complex domains simulated by Dissipative
  * Particle Dynamics driven by geometry-specific body-forces. Journal of Computational Physics, 305, 906-920.
+ *
+ * USAGE: mpirun -np 1 ./brownian : -np 4 ./vortex
+ *
  *                 1
  *     -------------------------
  *    |      |    | |    |      |
