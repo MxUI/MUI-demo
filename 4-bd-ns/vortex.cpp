@@ -21,7 +21,7 @@
  *    |-<--'    .     .    '-->-|
  *    |        .       .        |
  *    |---<---'         '--->---|
- * -1 |            X            | 1
+ * -1 |            X o          | 1
  *    |---<---.         .--->---|
  *    |        '       '        |
  *    |-<--.    '     '    .-->-|
@@ -32,12 +32,13 @@
  *                -1
  *
  * X: stagnation point
+ * o: particle initial position
  */
 
 int main( int argc, char ** argv ) {
     using namespace mui;
-
     MPI_Comm world = mui::mpi_split_by_app();
+	uniface2d interface( "mpi://vortex/ifs" );
 
     int rank, size;
     MPI_Comm_rank( world, &rank );
@@ -49,6 +50,7 @@ int main( int argc, char ** argv ) {
     int rank_x = rank / 2;
     int rank_y = rank % 2;
 
+    // decompose the domain
     constexpr static int N = 40; // number of grid points in each local domain
 	constexpr static double h = 1.0 / N;
 	double local_x0 = rank_x * 1 + -1; // local origin
@@ -57,8 +59,7 @@ int main( int argc, char ** argv ) {
 	double local_y1 = local_y0 + 1;
 	double px[N][N], py[N][N], ux[N][N], uy[N][N];
 
-	uniface2d interface( "mpi://vortex/ifs" );
-
+	// generate 'fake' flow field from analytical solution
     double Gamma = 100; // vortex circulation
 	for(int i=0;i<N;i++)
 		for(int j=0;j<N;j++) {
@@ -79,8 +80,9 @@ int main( int argc, char ** argv ) {
 				}
 		}
 
+	// dump the flow field
 	std::stringstream out;
-	for(int r =0;r<4;r++) {
+	for(int r=0;r<4;r++) {
 		if ( rank == r ) {
 			printf("rank %d\n", rank);
 			for(int i=0;i<N;i++)
@@ -98,25 +100,25 @@ int main( int argc, char ** argv ) {
 	MPI_File_write_at_all( fout, offset, out.str().c_str(), bytes, MPI_CHAR, &status );
 	MPI_File_close( &fout );
 
+	// annouce send span
 	geometry::box2d send_region( {local_x0, local_y0}, {local_x1, local_y1} );
 	printf("send region for rank %d: %lf %lf - %lf %lf\n", rank, local_x0, local_y0, local_x1, local_y1);
 	interface.announce_send_span( 0, 10000, send_region );
 
     for ( int t = 0; t <= 10000; t ++ ) {
-    	if ( t % 100 == 0 ) printf( "Vortex rank %d step %d\n", rank, t );
-
         // push data to the other solver
-        for(int i=0;i<N;i++)
+        for(int i=0;i<N;i++) {
         		for(int j=0;j<N;j++) {
         			point2d loc( px[i][j], py[i][j] );
         			interface.push( "ux", loc, ux[i][j] );
         			interface.push( "uy", loc, uy[i][j] );
         		}
-    	interface.announce_send_span( 0, 10000, send_region );
-        int sent = interface.commit( t );
-        if ( t % 100 == 0 ) printf("Vortex rank %d actual sending: %s\n", rank, sent ? "ON" : "OFF" );
+        }
 
-        // no need to fetch data, but better wait for the other side to catch up
+        int sent = interface.commit( t );
+        if ( t % 100 == 0 ) printf("Vortex rank %d step %d actual sending: %s\n", rank, t, sent ? "ON" : "OFF" );
+
+        // no need to fetch data, but wait for the other side to catch up
         interface.barrier( t );
     }
 
