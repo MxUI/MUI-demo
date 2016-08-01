@@ -31,6 +31,17 @@ matlab -r vizmulti
 
 You can view the time evolution of the simulation by running the vizmulti.m MATLAB script and dragging the slider bar in the figure.
 
+To run 4-bd-ns:
+
+```bash
+cd <repository_directory>/4-bd-ns
+make
+mpirun -np 1 ./brownian : -np 4 ./vortex
+gnuplot -p plot.gp
+```
+
+Also checkout flow.png for a visualization of the flow field.
+
 ## Publication
 
 **Tang** Y.-H., **Kudo**, S., **Bian**, X., **Li**, Z., & **Karniadakis**, G. E. Multiscale Universal Interface: A Concurrent Framework for Coupling Heterogeneous Solvers, *Journal of Computational Physics*, **2015**, 297.15, 13-31.
