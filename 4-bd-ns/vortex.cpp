@@ -98,6 +98,10 @@ int main( int argc, char ** argv ) {
 	MPI_File_write_at_all( fout, offset, out.str().c_str(), bytes, MPI_CHAR, &status );
 	MPI_File_close( &fout );
 
+	geometry::box2d send_region( {local_x0, local_y0}, {local_x1, local_y1} );
+	printf("send region for rank %d: %lf %lf - %lf %lf\n", rank, local_x0, local_y0, local_x1, local_y1);
+	interface.announce_send_span( 0, 10000, send_region );
+
     for ( int t = 0; t <= 10000; t ++ ) {
     	if ( t % 100 == 0 ) printf( "Vortex rank %d step %d\n", rank, t );
 
@@ -108,7 +112,9 @@ int main( int argc, char ** argv ) {
         			interface.push( "ux", loc, ux[i][j] );
         			interface.push( "uy", loc, uy[i][j] );
         		}
-        interface.commit( t );
+    	interface.announce_send_span( 0, 10000, send_region );
+        int sent = interface.commit( t );
+        if ( t % 100 == 0 ) printf("Vortex rank %d actual sending: %s\n", rank, sent ? "ON" : "OFF" );
 
         // no need to fetch data, but better wait for the other side to catch up
         interface.barrier( t );

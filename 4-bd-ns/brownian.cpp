@@ -60,6 +60,8 @@ int main(int argc, char **argv) {
     std::uniform_real_distribution<double> unif( -std::sqrt( 3 * dt ), std::sqrt( 3 * dt ) );
 
     // BD run
+	geometry::sphere2d recv_region( {x, y}, r );
+	interface.announce_recv_span( 0, 1, recv_region );
     for ( int step = 0 ; step <= 10000 ; step++ ) {
         if ( step % 100 == 0 ) printf( "Brownian step %d\n", step );
 
@@ -67,11 +69,11 @@ int main(int argc, char **argv) {
         double drag = 1.0;
 
 		// body force exerted by the underlying fluid solver
-        sampler_gauss2d<double> s1( 0.1, 0.025 );
+        sampler_gauss2d<double> s1( r, r/4 );
         chrono_sampler_exact2d  s2;
         double ux = interface.fetch( "ux", {x, y}, step, s1, s2 );
         double uy = interface.fetch( "uy", {x, y}, step, s1, s2 );
-        printf("x y %lf %lf ux uy %lf %lf\n", x, y, ux, uy );
+        //printf("x y %lf %lf ux uy %lf %lf\n", x, y, ux, uy );
         fx = ux * drag;
         fy = uy * drag;
 
@@ -98,6 +100,8 @@ int main(int argc, char **argv) {
         	fout << x << '\t' << y << std::endl;
         }
 
+    	geometry::sphere2d recv_region( {x, y}, r );
+    	interface.announce_recv_span( step, step+1, recv_region );
         interface.commit( step ); // signaling the other solver that it can move ahead now
     }
 
