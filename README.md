@@ -42,6 +42,13 @@ gnuplot -p plot.gp
 
 Also checkout flow.png for a visualization of the flow field.
 
+To run 5-multi-domain:
+
+```bash
+cd <repository_directory>/5-multi-domain
+make
+```
+
 ## Publication
 
 **Tang** Y.-H., **Kudo**, S., **Bian**, X., **Li**, Z., & **Karniadakis**, G. E. Multiscale Universal Interface: A Concurrent Framework for Coupling Heterogeneous Solvers, *Journal of Computational Physics*, **2015**, 297.15, 13-31.
