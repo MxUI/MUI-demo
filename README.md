@@ -1,5 +1,5 @@
 # MUI Demo
-This repository contains demos and example solvers that make use of the MUI Multiscale Universal Interface to perform multiscale/multiphysics computations. The MUI primary repository can be found at [https://github.com/yhtang/MUI](https://github.com/yhtang/MUI).
+This repository contains demos and example solvers that make use of the MUI Multiscale Universal Interface to perform multiscale/multiphysics computations. The MUI primary repository can be found at [https://github.com/MxUI/MUI](https://github.com/MxUI/MUI).
 
 ## Licensing
 
