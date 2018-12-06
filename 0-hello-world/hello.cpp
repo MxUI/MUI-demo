@@ -5,7 +5,7 @@
  *      Author: ytang
  */
 
-#include "../mui/mui.h"
+#include "mui.h"
 
 int main( int argc, char ** argv ) {
     using namespace mui;
