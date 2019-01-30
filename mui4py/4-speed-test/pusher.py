@@ -32,11 +32,6 @@ Ni = int(sys.argv[2])
 Nj = int(sys.argv[3])
 Npoints = Ni*Nj
 
-# Allocate memory for the points. Speedup things.
-uniface.push_size("data_py", Npoints, False)
-uniface.push_size("data_many", Npoints, False)
-uniface.push_size("data_raw", Npoints, False)
-
 # Setup data. Random array from predefined seed.
 np.random.seed(666)
 vals = np.random.rand(Npoints)
