@@ -33,5 +33,5 @@ uniface.push("data", point1, push_val)
 uniface.push("data", point2, push_val)
 
 # Value spatially independent
-uniface.assign("data_assign", push_val_assign)
+uniface.push("data_assign", push_val_assign)
 uniface.commit(t)
