@@ -2,7 +2,6 @@
 - How to use the *raw* interface of the bindings.
 - How to use `fetch_many()` and `push_many()`.
 - Simple profiling for `fetch()`and `push()`.
-- How to use `push_size()`.
 
 ## Notes:
 - To run the example `bash run.sh`. 
