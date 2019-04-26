@@ -32,5 +32,5 @@ print("\nFetched spatially independent value '{}' from domain {}.".format(fetch_
 fetch_val = uniface.fetch("data", point, t,
                           s_sampler_exact,
                           t_sampler_exact)
-print ("Points available:", uniface.fetch_points("data", t))
+#print ("Points available:", uniface.fetch_points("data", t))
 print("Fetched spatially dependent value '{}' from domain {}.".format(fetch_val, domain))
