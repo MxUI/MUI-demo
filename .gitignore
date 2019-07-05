@@ -1,3 +1,5 @@
-/.cproject
-/.project
+.cproject
+.project
 /.settings
+mui/*
+!/mui/README 

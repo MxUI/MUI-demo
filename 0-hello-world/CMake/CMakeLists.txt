@@ -11,4 +11,3 @@ find_package(mui REQUIRED)
 add_executable (hello ./hello.cpp )
 target_link_libraries (hello ${MPI_LIBRARIES} mui)
 install(TARGETS hello DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-
