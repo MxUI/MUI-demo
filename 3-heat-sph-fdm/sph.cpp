@@ -63,7 +63,7 @@
 #include <fstream>
 
 double cubic_spline_gradient( double r, double rc ) {
-    const static double sigma  = 2.0 / 3.0; // for one diemension
+    const static double sigma  = 2.0 / 3.0; // for one dimensional problem
     double              h      = rc / 2.0;
     double              coef_g = sigma / h / h;
     double              s      = r / h;
@@ -76,10 +76,6 @@ double cubic_spline_gradient( double r, double rc ) {
 }
 
 int main() {
-
-    using namespace mui;
-    uniface1d interface( "mpi://sph/ifs" );
-
     const int    Ni = 21, No = 2; // number of inside/outside particles
     const int    N = Ni + No * 2; // number of total particles
     const double L = 11;          // box length for internal materia
@@ -92,50 +88,71 @@ int main() {
     double m  = dx * rho;
     double dt = 0.25 * dx * dx / kappa;
 
+    // Option 1: Declare MUI objects using specialisms (i.e. 1 = 1 dimensional, d = double)
+    mui::uniface1d interface( "mpi://sph/ifs" );
+    mui::sampler_gauss1d<double> spatial_sampler( rc, rc / 2 );
+    mui::chrono_sampler_exact1d chrono_sampler;
+    mui::point1d push_point;
+    mui::point1d fetch_point;
+
+    // Option 2: Declare MUI objects using templates in config.h
+    // note: please update types stored in default_config in config.h first to 1-dimensional before compilation
+    //mui::uniface<mui::default_config> interface( "mpi://sph/ifs" );
+    //mui::sampler_gauss<mui::default_config> spatial_sampler( rc, rc / 2);
+    //mui::chrono_sampler_exact<mui::default_config> chrono_sampler;
+    //mui::point<mui::default_config::REAL, 3> push_point;
+    //mui::point<mui::default_config::REAL, 3> fetch_point;
+
     // initial conditions
     for ( int i = 0; i < N; i++ ) {
-        x[i] = ( i - N / 2 ) * dx;
-        u[i] = cv * ( i <= N / 2 ? 0 : 1 );
-        if ( i >= N / 4 && i <= N * 3 / 4 ) u[i] += i % 2 * 0.5;
+      x[i] = ( i - N / 2 ) * dx;
+      u[i] = cv * ( i <= N / 2 ? 0 : 1 );
+      if ( i >= N / 4 && i <= N * 3 / 4 ) u[i] += i % 2 * 0.5;
     }
 
     std::ofstream fout( "solution-sph.txt" );
 
     // time integration forward Euler scheme
     for ( int k = 0; k < 100; k++ ) {
-        // push data to the other solver
-        for ( int i : {3, 4, N - 5, N - 4} ) interface.push( "u", x[i], u[i] );
-        interface.commit( k );
+      // Push values to the MUI interface
+      for ( int i : {3, 4, N - 5, N - 4} ) {
+        push_point[0] = x[i];
+        interface.push( "u", push_point, u[i] );
+      }
+      // Commit (transmit by MPI) the values
+      interface.commit( k );
 
-        sampler_gauss1d<double> gauss( rc, rc / 2 );
-        chrono_sampler_exact1d  exact;
-        for ( int i : {0, 1, N - 2, N - 1} ) u[i] = interface.fetch( "u", x[i], k, gauss, exact );
+      // Fetch the values from the interface (blocking until data at "k" exists according to chrono_sampler)
+      for ( int i : {0, 1, N - 2, N - 1} ) {
+        fetch_point[0] = x[i];
+        u[i] = interface.fetch( "u", fetch_point, k, spatial_sampler, chrono_sampler );
+      }
 
-        // reset du
-        for ( int i = 0; i < N; i++ ) du[i] = 0.0;
+      // reset du
+      for ( int i = 0; i < N; i++ ) du[i] = 0.0;
 
-        // N^2 brute-force pairwise evaluation
-        for ( int i = 0; i < N - 1; i++ ) {
-            for ( int j = i + 1; j < N; j++ ) {
-                double r_ij = x[j] - x[i];
+      // N^2 brute-force pairwise evaluation
+      for ( int i = 0; i < N - 1; i++ ) {
+        for ( int j = i + 1; j < N; j++ ) {
+          double r_ij = x[j] - x[i];
 
-                if ( r_ij <= rc ) {
-                    double w_g   = cubic_spline_gradient( r_ij, rc );
-                    double du_ij = 2.0 * kappa * m / rho / rho * w_g * ( u[i] / cv - u[j] / cv );
-                    du[i] += du_ij;
-                    du[j] -= du_ij;
-                }
-            }
+          if ( r_ij <= rc ) {
+            double w_g   = cubic_spline_gradient( r_ij, rc );
+            double du_ij = 2.0 * kappa * m / rho / rho * w_g * ( u[i] / cv - u[j] / cv );
+            du[i] += du_ij;
+            du[j] -= du_ij;
+          }
         }
+      }
 
-        // only update the internal material points
-        for ( int i = No; i < N - No; i++ ) u[i] += du[i];
+      // only update the internal material points
+      for ( int i = No; i < N - No; i++ ) u[i] += du[i];
 
-        if ( k % 10 == 0 ) {
-            printf( "SPH step %d\n", k );
-            for ( int i = No; i < N - No; i++ ) fout << x[i] << '\t' << u[i] << std::endl;
-            fout << std::endl;
-        }
+      if ( k % 10 == 0 ) {
+        printf( "SPH step %d\n", k );
+        for ( int i = No; i < N - No; i++ ) fout << x[i] << '\t' << u[i] << std::endl;
+        fout << std::endl;
+      }
     }
 
     return 0;

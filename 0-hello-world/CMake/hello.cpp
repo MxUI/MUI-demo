@@ -47,25 +47,47 @@
 #include "mui.h"
 
 int main( int argc, char ** argv ) {
-    using namespace mui;
+  if ( argc < 3 ) {
+    printf( "USAGE: mpirun -np n1 %s URI1 value1 : -np n2 %s URI2 value2\n\n"
+            "n1, n2     : number of ranks for each 'subdomain'\n"
+            "URI format : mpi://domain-identifier/interface-identifier\n"
+            "value      : an arbitrary number\n\n"
+            "EXAMPLE: mpirun -np 1 %s mpi://domain1/ifs 0.618 : -np 1 %s "
+            "mpi://domain2/ifs 1.414\n\n",
+            argv[0], argv[0], argv[0], argv[0] );
+    exit( 0 );
+  }
 
-    if ( argc < 3 ) {
-        printf( "USAGE: mpirun -np n1 %s URI1 value1 : -np n2 %s URI2 value2\n\n"
-                "n1, n2     : number of ranks for each 'subdomain'\n"
-                "URI format : mpi://domain-identifier/interface-identifier\n"
-                "value      : an arbitrary number\n\n"
-                "EXAMPLE: mpirun -np 1 %s mpi://domain1/ifs 0.618 : -np 1 %s "
-                "mpi://domain2/ifs 1.414\n\n",
-                argv[0], argv[0], argv[0], argv[0] );
-        exit( 0 );
-    }
+  // Option 1: Declare MUI objects using specialisms (i.e. 1 = 1 dimensional, d = double)
+  mui::uniface1d interface( argv[1] );
+  mui::sampler_exact1d<double> spatial_sampler;
+  mui::chrono_sampler_exact1d chrono_sampler;
+  mui::point1d push_point;
+  mui::point1d fetch_point;
 
-    uniface1d interface( argv[1] );
-    printf( "domain %s pushed value %s\n", argv[1], argv[2] );
-    interface.push( "data", 0, atof( argv[2] ) );
-    interface.commit( 0 );
-    double v = interface.fetch( "data", 0, 0, sampler_exact1d<double>(), chrono_sampler_exact1d() );
-    printf( "domain %s fetched value %lf\n", argv[1], v );
+  // Option 2: Declare MUI interface and samplers using templates in config.h
+  // note: please update types stored in default_config in config.h first to 1-dimensional before compilation
+  //mui::uniface<mui::default_config> interface( argv[1] );
+  //mui::sampler_exact<mui::default_config> spatial_sampler;
+  //mui::chrono_sampler_exact<mui::default_config> chrono_sampler;
+  //mui::point<mui::default_config::REAL, 1> push_point;
+  //mui::point<mui::default_config::REAL, 1> fetch_point;
 
-    return 0;
+  printf( "domain %s pushed value %s\n", argv[1], argv[2] );
+
+  // Push value stored in "argv[2]" to the MUI interface
+  push_point[0] = 0;
+  interface.push( "data", push_point, atof( argv[2] ) );
+
+  // Commit (transmit by MPI) the value
+  interface.commit( 0 );
+
+  // Fetch the value from the interface (blocking until data at "t=0" exists according to chrono_sampler)
+  int time = 0;
+  fetch_point[0] = 0;
+  double v = interface.fetch( "data", fetch_point, time, spatial_sampler, chrono_sampler );
+
+  printf( "domain %s fetched value %lf\n", argv[1], v );
+
+  return 0;
 }

@@ -41,8 +41,8 @@
  * @file multidomain.cpp
  * @author Y. H. Tang
  * @date 18 October 2016
- * @brief Test establishing multiple uniface instances using several
- * inter-communicators using the create_uniface helper function.
+ * @brief Test establishing uniface instances for multiple domains
+ * using the create_uniface helper function.
  *
  * USAGE mpirun -np n1 ./multidomain domain_name1 interface1 interface2 ... : \
  *              -np n2 ./multidomain domain_name2 interface2 interface3 ... : \
@@ -54,9 +54,14 @@
 int main( int argc, char ** argv ) {
     mui::mpi_split_by_app();
 
-    std::string              domain = argv[1];
+    std::string domain = argv[1];
+
     std::vector<std::string> interfaces;
     for ( int i = 2; i < argc; i++ ) interfaces.emplace_back( argv[i] );
 
+    // Option 1: Declare MUI objects using specialisms (i.e. 3 = 3 dimensional, d = double)
     auto ifs = mui::create_uniface<mui::config_3d>( domain, interfaces );
+
+    // Option 2: Declare MUI interface and samplers using templates in config.h
+    //auto ifs = mui::create_uniface<mui::default_config>( domain, interfaces );
 }
