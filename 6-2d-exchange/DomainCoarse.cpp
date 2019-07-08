@@ -1,13 +1,52 @@
-/*
- * DomainCoarse.cpp
- *
- *  Created on: May 16, 2019
- *      Author: S. Rolfo
- */
+/*****************************************************************************
+* Multiscale Universal Interface Code Coupling Library Demo 6                *
+*                                                                            *
+* Copyright (C) 2019 S. Rolfo (*STFC Daresbury laboratory)                   *
+*                                                                            *
+* This software is jointly licensed under the Apache License, Version 2.0    *
+* and the GNU General Public License version 3, you may use it according     *
+* to either.                                                                 *
+*                                                                            *
+* ** Apache License, version 2.0 **                                          *
+*                                                                            *
+* Licensed under the Apache License, Version 2.0 (the "License");            *
+* you may not use this file except in compliance with the License.           *
+* You may obtain a copy of the License at                                    *
+*                                                                            *
+* http://www.apache.org/licenses/LICENSE-2.0                                 *
+*                                                                            *
+* Unless required by applicable law or agreed to in writing, software        *
+* distributed under the License is distributed on an "AS IS" BASIS,          *
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+* See the License for the specific language governing permissions and        *
+* limitations under the License.                                             *
+*                                                                            *
+* ** GNU General Public License, version 3 **                                *
+*                                                                            *
+* This program is free software: you can redistribute it and/or modify       *
+* it under the terms of the GNU General Public License as published by       *
+* the Free Software Foundation, either version 3 of the License, or          *
+* (at your option) any later version.                                        *
+*                                                                            *
+* This program is distributed in the hope that it will be useful,            *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+* GNU General Public License for more details.                               *
+*                                                                            *
+* You should have received a copy of the GNU General Public License          *
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
+******************************************************************************/
 
-// Simple programme to exchange an array using MUI with NN sample
-// The programme show how to start MUI in a funtion and COMMIT and FETCH in others
-// Coarse Domain
+/**
+ * @file DomainCoarse.cpp
+ * @author Stefano Rolfo
+ * @date May 16th 2019
+ * @brief Simple programme to exchange an array using MUI with NN sampler
+ * @brief The programme show how to start MUI in a funtion and COMMIT and FETCH in others
+ * @brief Coarse Domain
+ *
+ * USAGE: sh run_case.sh
+ */
 
 #include "../mui/mui.h"
 #include <algorithm>
@@ -86,8 +125,8 @@ void compute_solution(int nv,int it,double tt,double *xx,double *yy,double *us)
 
 void get_solution(int nv,int it,double tt,double *xx,double *yy,double *ur)
 {
-  sampler_nearest_neighbor2d<double> s1;
-  chrono_sampler_exact2d  s2(1e-2);
+  sampler_pseudo_nearest_neighbor2d<double> s1(1e-2);
+  chrono_sampler_exact2d  s2;
   for(int i=0; i<nv; ++i){
     point2d loc( xx[i], yy[i] );
     ur[i] = interface->fetch("us",loc, it, s1, s2);
@@ -102,7 +141,7 @@ void output (int it, int nc, double *xx, double *yy,  double *us,  double *ur)
   std::string root="solution_coarse";
   std::string format=".dat";
   std::string fname;
-  // Convert it to string and padding with 0
+  // Convert to string and padding with 0
   std::stringstream ss;
   ss << std::setw(3) << std::setfill('0') << it;
   std::string its = ss.str();
