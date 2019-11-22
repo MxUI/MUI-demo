@@ -1,4 +1,4 @@
-# MUI Python Wrapper Demo: 5-CPP-python
+# MUI Python Wrapper Demo: 5-Cpp-Python
 This demo of the Python wrapper of MUI Multiscale Universal Interface is to exchange data between a C++ code and a Python code by using Python wrapper of MUI. 
 
 This demo shows how to:
