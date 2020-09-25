@@ -2,7 +2,7 @@
 * Multiscale Universal Interface Code Coupling Library                       *
 *                                                                            *
 * Copyright (C) 2019 Y. H. Tang, S. Kudo, X. Bian, Z. Li, G. E. Karniadakis  *
-*                    W. Liu                                                  *
+*                    S. M. Longshaw                                          *
 *                                                                            *
 * This software is jointly licensed under the Apache License, Version 2.0    *
 * and the GNU General Public License version 3, you may use it according     *
@@ -38,19 +38,19 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
 *****************************************************************************/
 
-#ifndef DEMO7_CONFIG_H
-#define DEMO7_CONFIG_H
+#ifndef DEMO8_CONFIG_H
+#define DEMO8_CONFIG_H
 
-#include "util.h"
-#include "dim.h"
-#include "exception.h"
+#include "../mui/util.h"
+#include "../mui/dim.h"
+#include "../mui/exception.h"
 
 namespace mui {
 
-struct demo7_config {
+struct demo8_config {
 
     /// Define the dimension of the interface
-	static const int D = 2;
+	static const int D = 1;
 
     /// MUI type define
 	using REAL = double;
@@ -65,7 +65,7 @@ struct demo7_config {
 	static const bool QUIET = false; // Enables minimal console output if true
 
     /// Switch of fixed points/dynamic points
-	static const bool FIXEDPOINTS = true;
+	static const bool FIXEDPOINTS = false;
 };
 }
 
