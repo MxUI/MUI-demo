@@ -55,4 +55,4 @@ make
 
 ## Contact
 
-Should you have any question please do not hesitate to contact yuhang_tang at brown dot edu
+Should you have any question please do not hesitate to contact the developers, a list can be found within the MxUI GitHub organisation pages [https://github.com/MxUI/MUI](https://github.com/MxUI/MUI)
