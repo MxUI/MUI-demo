@@ -2,7 +2,6 @@
 * Multiscale Universal Interface Code Coupling Library                       *
 *                                                                            *
 * Copyright (C) 2019 Y. H. Tang, S. Kudo, X. Bian, Z. Li, G. E. Karniadakis  *
-*                    W. Liu                                                  *
 *                                                                            *
 * This software is jointly licensed under the Apache License, Version 2.0    *
 * and the GNU General Public License version 3, you may use it according     *
@@ -48,24 +47,27 @@
 namespace mui {
 
 struct demo7_config {
-
+	using EXCEPTION = exception_segv;
+	/// Switch of debug mode
+	static const bool DEBUG = false;
     /// Define the dimension of the interface
 	static const int D = 2;
+    /// Switch of fixed points/dynamic points
+	static const bool FIXEDPOINTS = true;
+	static const bool QUIET = false;		//- If the library is quiet then it will only issue critical warning messages
 
     /// MUI type define
 	using REAL = double;
 	using INT  = int;
+
 	using point_type = point<REAL,D>;
-	using time_type  = INT; // INT-typed time stamp might be an alternative
+	using time_type  = REAL; // INT-typed time stamp might be an alternative
 	using data_types = type_list<int,double,float>;
 
-    /// Switch of debug mode
-	static const bool DEBUG = false;
-	using EXCEPTION = exception_segv;
-	static const bool QUIET = false; // Enables minimal console output if true
 
-    /// Switch of fixed points/dynamic points
-	static const bool FIXEDPOINTS = true;
+
+
+
 };
 }
 

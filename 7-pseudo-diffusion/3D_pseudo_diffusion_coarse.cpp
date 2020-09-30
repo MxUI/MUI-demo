@@ -1,46 +1,7 @@
-/*****************************************************************************
-* Multiscale Universal Interface Code Coupling Library Demo 7                *
-*                                                                            *
-* Copyright (C) 2019 W. Liu                                                  *
-*                                                                            *
-* This software is jointly licensed under the Apache License, Version 2.0    *
-* and the GNU General Public License version 3, you may use it according     *
-* to either.                                                                 *
-*                                                                            *
-* ** Apache License, version 2.0 **                                          *
-*                                                                            *
-* Licensed under the Apache License, Version 2.0 (the "License");            *
-* you may not use this file except in compliance with the License.           *
-* You may obtain a copy of the License at                                    *
-*                                                                            *
-* http://www.apache.org/licenses/LICENSE-2.0                                 *
-*                                                                            *
-* Unless required by applicable law or agreed to in writing, software        *
-* distributed under the License is distributed on an "AS IS" BASIS,          *
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
-* See the License for the specific language governing permissions and        *
-* limitations under the License.                                             *
-*                                                                            *
-* ** GNU General Public License, version 3 **                                *
-*                                                                            *
-* This program is free software: you can redistribute it and/or modify       *
-* it under the terms of the GNU General Public License as published by       *
-* the Free Software Foundation, either version 3 of the License, or          *
-* (at your option) any later version.                                        *
-*                                                                            *
-* This program is distributed in the hope that it will be useful,            *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
-* GNU General Public License for more details.                               *
-*                                                                            *
-* You should have received a copy of the GNU General Public License          *
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
-******************************************************************************/
-
 /**
  *
  * @file 3D_pseudo_diffusion_coarse.cpp
- * @author W. Liu
+ * @author W.L.
  * @date 09 Oct 2019
  * @brief See README.md
  *
@@ -50,12 +11,17 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <sys/stat.h>
 
 /// Include MUI header file and configure file 
 #include "mui.h"
 #include "demo7_config.h"
 
 int main(int argc, char ** argv) {
+
+    /// Create rbf matrix folder
+    mkdir("rbfCoarseMatrix", 0777);
 
     /// Declare MPI common world with the scope of MUI
 	MPI_Comm  world = mui::mpi_split_by_app();
@@ -83,9 +49,15 @@ int main(int argc, char ** argv) {
     /// Define the forget steps of MUI to reduce the memory
     int         forgetSteps = 5;
 
+    /// Define parameters of the RBF sampler
     /// Define the search radius of the RBF sampler
     /// The search radius should not set to a very large value so that to ensure a good convergence
-    double      rSampler    = 0.4;
+    double      rSampler    = 	0.4;
+	bool 		conservative=	false; 
+	double 		cutoff		=	1e-9;
+	bool 		polynomial	=	true;
+	bool 		readMatrix	=	false;
+    std::string fileAddress("rbfCoarseMatrix");
 
 	/// Setup diffusion rate
     constexpr static double dr              = 0.5;
@@ -158,7 +130,7 @@ int main(int argc, char ** argv) {
     ifs[0]->announce_recv_span( 0, steps, recv_region );
 
 	/// Define spatial and temporal samplers
-    mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler,point2dvec,false,1e-9,true);
+    mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler,point2dvec,conservative,cutoff,polynomial,fileAddress,readMatrix);
     mui::chrono_sampler_exact<mui::demo7_config> chrono_sampler;
 
 	/// Commit ZERO step of MUI
