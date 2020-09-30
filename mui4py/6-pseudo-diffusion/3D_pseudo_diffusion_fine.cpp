@@ -23,13 +23,11 @@ int main(int argc, char ** argv) {
     /// Create results folder
     mkdir("coupling_results", 0777);
 
+    /// Create rbf matrix folder
+    mkdir("rbfFineMatrix", 0777);
+
     /// Declare MPI common world with the scope of MUI
 	MPI_Comm  world = mui::mpi_split_by_app();
-
-    /// Declare MPI ranks and rank size
-    int rank, size;
-    MPI_Comm_rank( world, &rank );
-    MPI_Comm_size( world, &size );
 
     /// Define the name of MUI domain
     std::string domain = "fineDomain";
@@ -42,6 +40,11 @@ int main(int argc, char ** argv) {
     /// Declare MUI objects using MUI configure file
     auto ifs = mui::create_uniface<mui::demo6_config>( domain, interfaces );
 
+    /// Declare MPI ranks and rank size
+    int rank, size;
+    MPI_Comm_rank( world, &rank );
+    MPI_Comm_size( world, &size );
+
     /// Define the name of push/fetch values
 	const char* name_push   = "fineField";			
 	const char* name_fetch  = "coarseField";
@@ -49,9 +52,15 @@ int main(int argc, char ** argv) {
     /// Define the forget steps of MUI to reduce the memory
     int         forgetSteps = 5;
 
+    /// Define parameters of the RBF sampler
     /// Define the search radius of the RBF sampler
     /// The search radius should not set to a very large value so that to ensure a good convergence
-    double      rSampler    = 0.4;
+    double      rSampler    = 	0.4;
+	bool 		conservative=	false;
+	double 		cutoff		=	1e-9;
+	bool 		polynomial	=	true;
+	bool 		readMatrix	=	false;
+    std::string fileAddress("rbfFineMatrix");
 
 	/// Setup diffusion rate
     constexpr static double dr              = 0.5;
@@ -149,7 +158,7 @@ int main(int argc, char ** argv) {
     ifs[1]->announce_recv_span( 0, steps, recv_region );
 
 	/// Define spatial and temporal samplers
-    mui::sampler_rbf<mui::demo6_config> spatial_sampler(rSampler,point2dvec,false,1e-9,true);
+    mui::sampler_rbf<mui::demo6_config> spatial_sampler(rSampler,point2dvec,conservative,cutoff,polynomial,fileAddress,readMatrix);
     mui::chrono_sampler_exact<mui::demo6_config> chrono_sampler;
 
 	/// Commit ZERO step of MUI
