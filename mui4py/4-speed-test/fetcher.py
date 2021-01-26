@@ -109,7 +109,7 @@ for t in range(2*Nt, 3*Nt):
         t0 = time.time()
         fetch = uniface.raw.fetch_double_exact_chrono_exact
         fetch_vals[i] = fetch("data_raw", uniface.raw_point(p), t,
-                          s_sampler_raw.raw, t_sampler_raw.raw, True, mui4py.mui4py_mod.numeric_limits_int)
+                          s_sampler_raw.raw, t_sampler_raw.raw, True)
         t_new = time.time() - t0
         t_fetch_raw_max = max(t_new, t_fetch_raw_max)
         t_fetch_raw_min = min(t_new, t_fetch_raw_min)

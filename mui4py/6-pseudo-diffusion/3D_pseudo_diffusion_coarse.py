@@ -8,9 +8,11 @@
 """
 
 from mpi4py import MPI
+import mpi4py
 import datetime
 import numpy as np
 import time
+import os
 
 # Include MUI header file and configure file 
 import mui4py
@@ -40,6 +42,11 @@ MUI_Interfaces = mui4py.create_unifaces(domain, iface, config2d)
 MUI_Interfaces["interface2D01"].set_data_types(data_types_fetch)
 MUI_Interfaces["interface2D02"].set_data_types(data_types_push)
 
+print("mpi4py.get_config(): ", mpi4py.get_config(), "\n")
+print("mui4py.get_compiler_config(): ", mui4py.get_compiler_config(), "\n")
+print("mui4py.get_compiler_version(): ", mui4py.get_compiler_version(), "\n")
+print("mui4py.get_mpi_version(): ", mui4py.get_mpi_version(), "\n")
+
 # Define the forget steps of MUI to reduce the memory
 forgetSteps = int(5)
 
@@ -49,8 +56,17 @@ rSampler = 0.4
 
 # Define parameters of the RBF sampler
 cutoff = 1e-9
-conservative = False
-polynomial = True
+iConservative = False
+iPolynomial = True
+iReadMatrix = False
+rbfMatrixFolder="rbfCoarse"
+
+# Create the RBF Matrix Folder includes all intermediate folders if don't exists
+if not os.path.exists(rbfMatrixFolder):
+    os.makedirs(rbfMatrixFolder)
+    print("Folder " , rbfMatrixFolder, " created ")
+else:
+    print("Folder " , rbfMatrixFolder,  " already exists")
 
 # Setup diffusion rate
 dr = 0.5
@@ -123,7 +139,7 @@ MUI_Interfaces["interface2D02"].announce_send_span(0, (steps+1), send_span)
 
 # Spatial/temporal samplers
 t_sampler = mui4py.ChronoSamplerExact()
-s_sampler = mui4py.SamplerRbf(rSampler, point2dList, conservative, cutoff, polynomial)
+s_sampler = mui4py.SamplerRbf(rSampler, point2dList, iConservative, cutoff, iPolynomial, rbfMatrixFolder, iReadMatrix)
 
 # Commit ZERO step
 MUI_Interfaces["interface2D02"].commit(0)
@@ -174,7 +190,7 @@ for t in range(1, (steps+1)):
                     scalar_field[c_0] = MUI_Interfaces["interface2D01"].\
                                                         fetch(name_fetch,
                                                         points_fetch,
-                                                        float(t),
+                                                        t,
                                                         s_sampler,
                                                         t_sampler)
 

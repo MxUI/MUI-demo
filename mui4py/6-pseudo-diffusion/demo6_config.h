@@ -47,23 +47,22 @@
 namespace mui {
 
 struct demo6_config {
-
+	using EXCEPTION = exception_segv;
+	/// Switch of debug mode
+	static const bool DEBUG = false;
     /// Define the dimension of the interface
 	static const int D = 2;
+    /// Switch of fixed points/dynamic points
+	static const bool FIXEDPOINTS = false;
+	static const bool QUIET = false;		//- If the library is quiet then it will only issue critical warning messages
 
     /// MUI type define
 	using REAL = double;
-	using INT  = int32_t;
+	using INT  = int64_t;
+
 	using point_type = point<REAL,D>;
 	using time_type  = REAL; // INT-typed time stamp might be an alternative
 	using data_types = type_list<int32_t,int64_t,double>;
-
-    /// Switch of debug mode
-	static const bool DEBUG = false;
-	using EXCEPTION = exception_segv;
-
-    /// Switch of fixed points/dynamic points
-	static const bool FIXEDPOINTS = true;
 };
 }
 
