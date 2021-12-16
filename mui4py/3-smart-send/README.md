@@ -1,3 +1,4 @@
+[MUI minimum required: (VERSION 1.2+)]
 ## The example shows:
 - How to use *smart send* capabilities of MUI with different span shapes and timeouts.
 - How to use `mpi4py` in combination with `mui4py` module.

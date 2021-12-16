@@ -25,7 +25,7 @@ mui4py.set_default_config(config)
 URI = "mpi://" + domain + "/ifs1"
 uniface = mui4py.Uniface(uri=URI)
 uniface.set_data_types({"data": mui4py.STRING})
-
+synchronised=False
 # Eeach step from 1 to 3 sender uses a different span:
 #     s = 1 -> Box intersecting R0 and R2
 #     s = 2 -> Sphere intersecting R1 and R3
@@ -36,7 +36,7 @@ send_region_t2 = mui4py.geometry.Sphere([1.0, 0.0], 0.5)
 send_region_t3 = mui4py.geometry.Point([0.5, 0.5])
 
 # Initialisation of smart sending
-uniface.announce_send_span(0, 1, send_region_t1)
+uniface.announce_send_span(0, 1, send_region_t1,synchronised)
 
 steps = 4
 # At s=0  (Smart sending do not work in the first step)
@@ -44,9 +44,9 @@ print ("\nLooping...", flush=True)
 for s in range(1,steps+1):
     # Change send span
     if s == 1:
-        uniface.announce_send_span(2, 2, send_region_t2)
+        uniface.announce_send_span(2, 2, send_region_t2,synchronised)
     elif s == 2:
-        uniface.announce_send_span(3, 3, send_region_t3)
+        uniface.announce_send_span(3, 3, send_region_t3,synchronised)
     uniface.push("data", [-0.5, -0.5], "R0_t%d" % s)
     uniface.push("data", [0.5, -0.5], "R1_t%d" % s)
     uniface.push("data", [0.5, 0.5], "R2_t%d" % s)

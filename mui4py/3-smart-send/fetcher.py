@@ -13,7 +13,7 @@ uniface = mui4py.Uniface(uri=URI)
 uniface.set_data_types({"data": mui4py.STRING})
 t_sampler = mui4py.ChronoSamplerExact
 s_sampler = mui4py.SamplerExact
-
+synchronised=False
 # Rank to geometry mapping
 if rank == 0:
     box_p1 = [-1.0, -1.0]
@@ -33,7 +33,7 @@ fetch_point = [(box_p2[0]+box_p1[0])/2.0, (box_p2[1]+box_p1[1])/2.0]
 
 # Initialisation of smart sending
 recv_box = mui4py.geometry.Box(box_p1, box_p2)
-uniface.announce_recv_span(0, 4, recv_box) 
+uniface.announce_recv_span(0, 4, recv_box, synchronised)
 
 steps = 4
 sleep_t = 0.1
