@@ -49,6 +49,8 @@ print("mui4py.get_mpi_version(): ", mui4py.get_mpi_version(), "\n")
 
 # Define the forget steps of MUI to reduce the memory
 forgetSteps = int(5)
+# Define the synchronised boolen for MUI smart send
+synchronised=False
 
 # Define the search radius of the RBF sampler
 # The search radius should not set to a very large value so that to ensure a good convergence
@@ -60,7 +62,8 @@ iConservative = False
 iPolynomial = True
 iReadMatrix = False
 rbfMatrixFolder="rbfCoarse"
-
+baseFunc=0
+smoothFunc=False
 # Create the RBF Matrix Folder includes all intermediate folders if don't exists
 if not os.path.exists(rbfMatrixFolder):
     os.makedirs(rbfMatrixFolder)
@@ -134,12 +137,12 @@ for k in range(Nk):
 # Define and announce MUI send/receive span
 send_span = mui4py.geometry.Box([y0, z0], [(y0+ly), (z0+lz)])
 recv_span = mui4py.geometry.Box([y0, z0], [(y0+ly), (z0+lz)])
-MUI_Interfaces["interface2D01"].announce_recv_span(0, (steps+1), recv_span)
-MUI_Interfaces["interface2D02"].announce_send_span(0, (steps+1), send_span)
+MUI_Interfaces["interface2D01"].announce_recv_span(0, (steps+1), recv_span, synchronised)
+MUI_Interfaces["interface2D02"].announce_send_span(0, (steps+1), send_span, synchronised)
 
 # Spatial/temporal samplers
 t_sampler = mui4py.ChronoSamplerExact()
-s_sampler = mui4py.SamplerRbf(rSampler, point2dList, iConservative, cutoff, iPolynomial, rbfMatrixFolder, iReadMatrix)
+s_sampler = mui4py.SamplerRbf(rSampler, point2dList, baseFunc, iConservative, iPolynomial, smoothFunc, iReadMatrix, rbfMatrixFolder, cutoff)
 
 # Commit ZERO step
 MUI_Interfaces["interface2D02"].commit(0)

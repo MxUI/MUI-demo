@@ -60,6 +60,8 @@ int main(int argc, char ** argv) {
 	double 		cutoff		=	1e-9;
 	bool 		polynomial	=	true;
 	bool 		readMatrix	=	false;
+	int 		basisFunc	=	0;
+	bool 		smoothFunc	=	false;
     std::string fileAddress("rbfFineMatrix");
 
 	/// Setup diffusion rate
@@ -158,7 +160,7 @@ int main(int argc, char ** argv) {
     ifs[1]->announce_recv_span( 0, steps, recv_region );
 
 	/// Define spatial and temporal samplers
-    mui::sampler_rbf<mui::demo6_config> spatial_sampler(rSampler,point2dvec,conservative,cutoff,polynomial,fileAddress,readMatrix);
+    mui::sampler_rbf<mui::demo6_config> spatial_sampler(rSampler,point2dvec,basisFunc,conservative,polynomial,smoothFunc,readMatrix,fileAddress,cutoff);
     mui::chrono_sampler_exact<mui::demo6_config> chrono_sampler;
 
 	/// Commit ZERO step of MUI
