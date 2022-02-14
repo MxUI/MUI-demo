@@ -80,16 +80,18 @@ int main(int argc, char **argv) {
   int forgetSteps = 5;
 
   /// Define parameters of the RBF sampler
-  /// Define the search radius of the RBF sampler
-  /// The search radius should not set to a very large value so that to ensure a good convergence
-  double rSampler   = 0.4;
-  int basisFunc     = 0;
-  bool conservative = false;
-  double cutoff     = 1e-9;
-  bool polynomial   = true;
-  bool smoothFunc   = false;
-  bool readMatrix   = false;
-  std::string fileAddress("rbfCoarseMatrix");
+  double rSampler   = 0.4;                    // Define the search radius of the RBF sampler (radius size should be minimised)
+  int basisFunc     = 0;                      // Specify RBF basis function 0-Gaussian; 1-WendlandC0; 2-WendlandC2; 3-WendlandC4; 4-WendlandC6
+  bool conservative = false;                  // Enable conservative OR consistent RBF form
+  bool polynomial   = true;                   // Enable/disable polynomial terms during RBF matrix creation
+  bool smoothFunc   = false;                  // Enable/disable RBF smoothing function during matrix creation
+  bool readMatrix   = false;                  // Enable/disable reading the matrix in from file
+  bool writeMatrix  = true;                   // Enable/disable writing of the matrix (if not reading)
+  std::string fileAddress("rbfCoarseMatrix"); // Output folder for the RBF matrix files
+  double cutoff     = 1e-9;                   // Cut-off value for Gaussian RBF basis function
+  double cgSolveTol = 1e-6;                   // Eigen Conjugate Gradient solver tolerance
+  int cgMaxIter     = -1;                     // Eigen Conjugate Gradient solver maximum iterations (-1 = value determined by tolerance)
+  int pouSize       = 50;                     // RBF Partition of Unity patch size
 
   /// Setup diffusion rate
   constexpr static double dr = 0.5;
@@ -165,8 +167,8 @@ int main(int argc, char **argv) {
 
   /// Define spatial and temporal samplers
   mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler, point2dvec,
-       basisFunc, conservative, polynomial, smoothFunc, readMatrix, fileAddress,
-       cutoff);
+        basisFunc, conservative, polynomial, smoothFunc, readMatrix, writeMatrix, fileAddress,
+        cutoff, cgSolveTol, cgMaxIter, pouSize);
   mui::chrono_sampler_exact<mui::demo7_config> chrono_sampler;
 
   /// Commit ZERO step of MUI
