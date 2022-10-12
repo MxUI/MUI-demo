@@ -1,0 +1,13 @@
+#!/bin/bash
+
+make -f Makefile_Heat_Transfer_Test clean
+
+rm make.log
+
+rm parallel.log
+
+rm core.*
+
+rm -r results_left*
+
+rm -r results_right*

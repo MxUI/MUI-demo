@@ -1,0 +1,23 @@
+#!/bin/bash
+
+make -f Makefile_Heat_Transfer_Test
+
+START=$SECONDS
+
+mpirun -np 1 ./heat-right :\
+       -np 1 ./heat-left
+
+DURATION=$(( SECONDS - START ))
+
+if (( $DURATION > 3600 )) ; then
+    let "hours=DURATION/3600"
+    let "minutes=(DURATION%3600)/60"
+    let "seconds=(DURATION%3600)%60"
+    echo "Completed in $hours hour(s), $minutes minute(s) and $seconds second(s)"
+elif (( $DURATION > 60 )) ; then
+    let "minutes=(DURATION%3600)/60"
+    let "seconds=(DURATION%3600)%60"
+    echo "Completed in $minutes minute(s) and $seconds second(s)"
+else
+    echo "Completed in $DURATION seconds"
+fi
