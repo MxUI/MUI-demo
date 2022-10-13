@@ -84,8 +84,8 @@ int main( int argc, char ** argv ) {
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(0.1);
     chrono_sampler_exact1d  s2;
-    algo_fixedRelaxation1d fr(0.01,ptsVluInit);
-    //algo_fixedRelaxation1d fr(0.01);
+    algo_fixed_relaxation1d fr(0.01,ptsVluInit);
+    //algo_fixed_relaxation1d fr(0.01);
 
      // Print off a hello world message
     printf("Hello world from Right rank %d out of %d MUI processors\n",
