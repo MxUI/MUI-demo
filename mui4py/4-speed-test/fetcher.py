@@ -49,7 +49,7 @@ print("Running pythonic...", flush=True)
 
 # Spatial and temporal samplers
 s_sampler_exact = mui4py.SamplerExact()
-t_sampler_exact = mui4py.ChronoSamplerExact()
+t_sampler_exact = mui4py.TemporalSamplerExact()
 
 t_fetch_py = 0.0
 t_fetch_py_max = 0.0
@@ -99,7 +99,7 @@ t_fetch_raw_min = 100.0
 #       specific configuration of the interface.
 s_sampler_raw = mui4py.SamplerExact()
 s_sampler_raw.configure(config, io_data_type=mui4py.FLOAT64)
-t_sampler_raw = mui4py.ChronoSamplerExact()
+t_sampler_raw = mui4py.TemporalSamplerExact()
 t_sampler_raw.configure(config)
 
 fetch_vals = np.zeros(Npoints)
@@ -107,7 +107,7 @@ fetch_vals = np.zeros(Npoints)
 for t in range(2*Nt, 3*Nt):
     for i, p in enumerate(points):
         t0 = time.time()
-        fetch = uniface.raw.fetch_double_exact_chrono_exact
+        fetch = uniface.raw.fetch_double_exact_temporal_exact
         fetch_vals[i] = fetch("data_raw", uniface.raw_point(p), t,
                           s_sampler_raw.raw, t_sampler_raw.raw, True)
         t_new = time.time() - t0

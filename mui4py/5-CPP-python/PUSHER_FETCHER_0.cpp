@@ -82,7 +82,7 @@ int main(int argc, char ** argv) {
 
 	// define spatial and temporal samplers
 	sampler_gauss3d<double> s1( r, r / 4 );
-	chrono_sampler_exact3d  s2;
+	temporal_sampler_exact3d  s2;
 	
 	// commit ZERO step
 	interface.commit(0);

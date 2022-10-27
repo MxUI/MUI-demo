@@ -37,7 +37,7 @@ uniface.set_data_types({"data_string": mui4py.STRING,
 
 # Spatial and time samplers. The appropriate type dispatching for the
 # samplers is done withing fetch/push using 'Config()' and 'set_data_type()' info.
-t_sampler_exact = mui4py.ChronoSamplerExact()
+t_sampler_exact = mui4py.TemporalSamplerExact()
 s_sampler_exact = mui4py.SamplerExact()
 
 # Header/footer printing syncronized functions for the examples
