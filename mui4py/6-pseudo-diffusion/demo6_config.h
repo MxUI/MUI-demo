@@ -47,22 +47,30 @@
 namespace mui {
 
 struct demo6_config {
-  using EXCEPTION = exception_segv;
-  /// Switch of debug mode
-  static const bool DEBUG = false;
-  /// Define the dimension of the interface
-  static const int D = 2;
-  /// Switch of fixed points/dynamic points
-  static const bool FIXEDPOINTS = false;
-  static const bool QUIET = false;//- If the library is quiet then it will only issue critical warning messages
+	using EXCEPTION = exception_segv;
+	/// Switch of debug mode
+	static const bool DEBUG = false;
+	/// Define the dimension of the interface
+	static const int D = 2;
+	/// Switch of fixed points/dynamic points
+	static const bool FIXEDPOINTS = false;
+	static const bool QUIET = false;//- If the library is quiet then it will only issue critical warning messages
 
-  /// MUI type define
-  using REAL = double;
-  using INT = int32_t;
+	/// MUI type define
 
-  using point_type = point<REAL,D>;
-  using time_type = REAL; // INT-typed time stamp might be an alternative
-  using data_types = type_list<int32_t,int64_t,double>;
+	using REAL = double;
+	using INT  = int64_t;
+	using time_type = REAL;
+	using iterator_type = INT;
+	using point_type = point<REAL, D>;
+	using data_types = type_list<uint32_t,
+								 uint64_t,
+								 int32_t,
+								 int64_t,
+								 double,
+								 float,
+								 std::string
+								>;
 };
 }
 
