@@ -85,7 +85,7 @@ int main( int argc, char ** argv ) {
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(0.1);
-    chrono_sampler_exact1d  s2;
+    temporal_sampler_exact1d  s2;
     algo_fixed_relaxation1d fr(0.01,ptsVluInit);
 
      // Print off a hello world message
@@ -109,9 +109,9 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u", 4, u[4]);
-            interface.commit( t );
+            interface.commit( std::numeric_limits<double>::lowest(), t );
 
-            u[6] = interface.fetch( "u0", 6 * H, t, s1, s2, fr );
+            u[6] = interface.fetch( "u0", 6 * H, std::numeric_limits<double>::lowest(), t, s1, s2, fr );
 
 
             // calculate 'interior' points
