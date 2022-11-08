@@ -104,17 +104,17 @@ int main( int argc, char ** argv ) {
     for ( int i = 0; i <  7; i++ ) outputFileLeft << i * H << "," << u[i] << ", \n";
     outputFileLeft.close();
 
-    for ( int t = 1; t <= 1000; ++t ) {
-        printf( "Left grid step %d\n", t );
+    for ( int iter = 1; iter <= 1000; ++iter ) {
+        printf( "Left grid iteration %d\n", iter );
 
             // push data to the other solver
             interface.push( "u", 4, u[4]);
-            interface.commit( std::numeric_limits<double>::lowest(),t );
+            interface.commit( std::numeric_limits<double>::lowest(),iter );
 
-            u[6] = interface.fetch( "u0", 6 * H, std::numeric_limits<double>::lowest(), t, s1, s2, aitken );
+            u[6] = interface.fetch( "u0", 6 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, aitken );
 
-            printf( "Left under relaxation factor at t= %d is %f\n", t, aitken.get_under_relaxation_factor(std::numeric_limits<double>::lowest(),t));
-            printf( "Left residual L2 Norm at t= %d is %f\n", t, aitken.get_residual_L2_Norm(std::numeric_limits<double>::lowest(),t));
+            printf( "Left under relaxation factor at iter= %d is %f\n", iter, aitken.get_under_relaxation_factor(std::numeric_limits<double>::lowest(),iter));
+            printf( "Left residual L2 Norm at iter= %d is %f\n", iter, aitken.get_residual_L2_Norm(std::numeric_limits<double>::lowest(),iter));
 
             // calculate 'interior' points
             for ( int i = 1; i <  6; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
@@ -128,7 +128,7 @@ int main( int argc, char ** argv ) {
         /// Output
         std::ofstream outputFileLeft;
         std::string filenameL = "results_left" + std::to_string(rank) + "/solution-left_AITKEN_"
-          + std::to_string(t) + ".csv";
+          + std::to_string(iter) + ".csv";
         outputFileLeft.open(filenameL);
         outputFileLeft << "\"X\",\"u\"\n";
         for ( int i = 0; i <  7; i++ ) outputFileLeft << i * H << "," << u[i] << ", \n";

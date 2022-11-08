@@ -104,17 +104,17 @@ int main( int argc, char ** argv ) {
     for ( int i = 0; i <  70; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
     outputFileLeft.close();
 
-    for ( int t = 1; t <= 1000; ++t ) {
-        printf( "Left grid step %d\n", t );
+    for ( int iter = 1; iter <= 1000; ++iter ) {
+        printf( "Left grid iteration %d\n", iter );
 
             // push data to the other solver
             interface.push( "u", 40, u[40]);
-            interface.commit( std::numeric_limits<double>::lowest(), t );
+            interface.commit( std::numeric_limits<double>::lowest(), iter );
 
-            u[60] = interface.fetch( "u0", 60 * H, std::numeric_limits<double>::lowest(), t, s1, s2, fr );
+            u[60] = interface.fetch( "u0", 60 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr );
 
-			if ((t>=150) && (t<250)) {
-				u[58] = interface.fetch( "u0", 58 * H, std::numeric_limits<double>::lowest(), t, s1, s2, fr );
+			if ((iter>=150) && (iter<250)) {
+				u[58] = interface.fetch( "u0", 58 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr );
 			}
 
             // calculate 'interior' points
@@ -124,7 +124,7 @@ int main( int argc, char ** argv ) {
 
             v[N - 10] = u[N - 10]; 
 
-			if ((t>=150) && (t<250)) {
+			if ((iter>=150) && (iter<250)) {
 				v[58] = u[58]; 
 			}
 
@@ -133,13 +133,13 @@ int main( int argc, char ** argv ) {
         /// Output
         std::ofstream outputFileLeft;
         std::string filenameL = "results_left" + std::to_string(rank) + "/solution-left_FR_"
-          + std::to_string(t) + ".csv";
+          + std::to_string(iter) + ".csv";
         outputFileLeft.open(filenameL);
         outputFileLeft << "\"X\",\"u\"\n";
 
 		for ( int i = 0; i <  60; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
 
-		if ((t>=150) && (t<250)) {
+		if ((iter>=150) && (iter<250)) {
 			outputFileLeft << 58 * H << "," << u[58] << ", \n";
 		}
 

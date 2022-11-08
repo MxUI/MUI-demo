@@ -102,17 +102,17 @@ int main( int argc, char ** argv ) {
     for ( int i = 40; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
     outputFileRight.close();
 
-    for ( int t = 1; t <= 1000; ++t ) {
-        printf( "Right grid step %d\n", t );
+    for ( int iter = 1; iter <= 1000; ++iter ) {
+        printf( "Right grid iteration %d\n", iter );
 
-            u[40] = interface.fetch( "u", 40 * H, std::numeric_limits<double>::lowest(), t, s1, s2, aitken );
+            u[40] = interface.fetch( "u", 40 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, aitken );
 
-			if ((t>=10) && (t<50)) {
-				u[42] = interface.fetch( "u", 42 * H, std::numeric_limits<double>::lowest(), t, s1, s2, aitken  );
+			if ((iter>=10) && (iter<50)) {
+				u[42] = interface.fetch( "u", 42 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, aitken  );
 			}
 
-            printf( "Right under relaxation factor at t= %d is %f\n", t, aitken.get_under_relaxation_factor(std::numeric_limits<double>::lowest(), t));
-            printf( "Right residual L2 Norm at t= %d is %f\n", t, aitken.get_residual_L2_Norm(std::numeric_limits<double>::lowest(), t));
+            printf( "Right under relaxation factor at iter= %d is %f\n", iter, aitken.get_under_relaxation_factor(std::numeric_limits<double>::lowest(), iter));
+            printf( "Right residual L2 Norm at iter= %d is %f\n", iter, aitken.get_residual_L2_Norm(std::numeric_limits<double>::lowest(), iter));
    
          // calculate 'interior' points
             for ( int i = 50; i <  110; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
@@ -120,30 +120,30 @@ int main( int argc, char ** argv ) {
             v[N - 10] = 0.0;
             v[40]     = u[40    ];
 
-			if ((t>=10) && (t<50)) {
+			if ((iter>=10) && (iter<50)) {
 				v[42]     = u[42    ];
 			}
 
             // push data to the other solver
             interface.push( "u0", 60 * H, u[60] );
-            interface.commit( std::numeric_limits<double>::lowest(), t );
+            interface.commit( std::numeric_limits<double>::lowest(), iter );
         // I/O
         std::swap( u, v );
 
         /// Output
         std::ofstream outputFileRight;
         std::string filenameR = "results_right" + std::to_string(rank) + "/solution-right_AITKEN_"
-          + std::to_string(t) + ".csv";
+          + std::to_string(iter) + ".csv";
         outputFileRight.open(filenameR);
         outputFileRight << "\"X\",\"u\"\n";
 
 		outputFileRight << 40 * H << "," << u[40] << ", \n";
 
-		if ((t>=10) && (t<50)) {
+		if ((iter>=10) && (iter<50)) {
 			outputFileRight << 42 * H << "," << u[42] << ", \n";
 		}
 
-        for ( int i = 40; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
+        for ( int i = 50; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
         outputFileRight.close();
     }
 
