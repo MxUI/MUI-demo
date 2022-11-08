@@ -83,7 +83,7 @@ int main( int argc, char ** argv ) {
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
-    chrono_sampler_exact1d  s2;
+    temporal_sampler_exact1d  s2;
 	algo_fixed_relaxation1d fr(0.01,ptsVluInit);
 
      // Print off a hello world message
@@ -105,10 +105,10 @@ int main( int argc, char ** argv ) {
     for ( int t = 1; t <= 1000; ++t ) {
         printf( "Right grid step %d\n", t );
 
-            u[40] = interface.fetch( "u", 40 * H, t, s1, s2, fr );
+            u[40] = interface.fetch( "u", 40 * H, std::numeric_limits<double>::lowest(), t, s1, s2, fr );
 
 			if ((t>=100) && (t<200)) {
-				u[42] = interface.fetch( "u", 42 * H, t, s1, s2, fr  );
+				u[42] = interface.fetch( "u", 42 * H, std::numeric_limits<double>::lowest(), t, s1, s2, fr  );
 			}
 
             // calculate 'interior' points
@@ -123,7 +123,7 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u0", 60 * H, u[60] );
-            interface.commit( t );
+            interface.commit( std::numeric_limits<double>::lowest(), t );
         // I/O
         std::swap( u, v );
 
