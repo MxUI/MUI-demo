@@ -85,7 +85,7 @@ int main( int argc, char ** argv ) {
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
-    chrono_sampler_exact1d  s2;
+    temporal_sampler_exact1d  s2;
     algo_aitken1d aitken(0.01,1.0);
 
      // Print off a hello world message
@@ -109,16 +109,16 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u", 40, u[40]);
-            interface.commit( t );
+            interface.commit( std::numeric_limits<double>::lowest(), t );
 
-            u[60] = interface.fetch( "u0", 60 * H, t, s1, s2, aitken );
+            u[60] = interface.fetch( "u0", 60 * H, std::numeric_limits<double>::lowest(), t, s1, s2, aitken );
 
 			if ((t>=20) && (t<40)) {
-				u[58] = interface.fetch( "u0", 58 * H, t, s1, s2, aitken );
+				u[58] = interface.fetch( "u0", 58 * H, std::numeric_limits<double>::lowest(), t, s1, s2, aitken );
 			}
 
-            printf( "Left under relaxation factor at t= %d is %f\n", t, aitken.get_under_relaxation_factor(t));
-            printf( "Left residual L2 Norm at t= %d is %f\n", t, aitken.get_residual_L2_Norm(t));
+            printf( "Left under relaxation factor at t= %d is %f\n", t, aitken.get_under_relaxation_factor(std::numeric_limits<double>::lowest(), t));
+            printf( "Left residual L2 Norm at t= %d is %f\n", t, aitken.get_residual_L2_Norm(std::numeric_limits<double>::lowest(), t));
 
             // calculate 'interior' points
             for ( int i = 10; i <  60; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
