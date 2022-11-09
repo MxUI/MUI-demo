@@ -68,7 +68,7 @@ int main( int argc, char ** argv ) {
     MPI_Comm_rank( world, &rank );
     MPI_Comm_size( world, &size );
 
-    /// Create rbf matrix folder
+    /// Create folder
     std::string makedirMString = "results_left" + std::to_string(rank);
     mkdir(makedirMString.c_str(), 0777);
     std::string fileAddress(makedirMString);
