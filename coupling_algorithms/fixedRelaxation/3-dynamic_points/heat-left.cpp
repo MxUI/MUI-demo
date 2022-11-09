@@ -109,12 +109,12 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u", 40, u[40]);
-            interface.commit( std::numeric_limits<double>::lowest(), iter );
+            interface.commit( iter );
 
-            u[60] = interface.fetch( "u0", 60 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr );
+            u[60] = interface.fetch( "u0", 60 * H, iter, s1, s2, fr );
 
 			if ((iter>=150) && (iter<250)) {
-				u[58] = interface.fetch( "u0", 58 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr );
+				u[58] = interface.fetch( "u0", 58 * H, iter, s1, s2, fr );
 			}
 
             // calculate 'interior' points

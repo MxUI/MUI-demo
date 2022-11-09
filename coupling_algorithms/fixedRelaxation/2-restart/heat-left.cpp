@@ -110,9 +110,9 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u", 4, u[4]);
-            interface.commit( std::numeric_limits<double>::lowest(), iter );
+            interface.commit( iter );
 
-            u[6] = interface.fetch( "u0", 6 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr );
+            u[6] = interface.fetch( "u0", 6 * H, iter, s1, s2, fr );
 
 
             // calculate 'interior' points

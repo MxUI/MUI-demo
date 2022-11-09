@@ -105,10 +105,10 @@ int main( int argc, char ** argv ) {
     for ( int iter = 1; iter <= 1000; ++iter ) {
         printf( "Right grid iteration %d\n", iter );
 
-            u[40] = interface.fetch( "u", 40 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr );
+            u[40] = interface.fetch( "u", 40 * H, iter, s1, s2, fr );
 
 			if ((iter>=100) && (iter<200)) {
-				u[42] = interface.fetch( "u", 42 * H, std::numeric_limits<double>::lowest(), iter, s1, s2, fr  );
+				u[42] = interface.fetch( "u", 42 * H, iter, s1, s2, fr  );
 			}
 
             // calculate 'interior' points
@@ -123,7 +123,7 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u0", 60 * H, u[60] );
-            interface.commit( std::numeric_limits<double>::lowest(), iter );
+            interface.commit( iter );
         // I/O
         std::swap( u, v );
 
