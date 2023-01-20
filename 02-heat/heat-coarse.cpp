@@ -38,10 +38,10 @@
 ******************************************************************************/
 
 /**
- * @file heat-fine.cpp
+ * @file heat-coarse.cpp
  * @author Y. H. Tang
  * @date 16 June 2016
- * @brief Coupled simple 1D heat solution with MUI coupling on a fine
+ * @brief Coupled simple 1D heat solution with MUI coupling on a coarse
  * grid.
  *
  * Grid scheme, 4:1 coarse-fine ratio, PBC
@@ -56,66 +56,70 @@
  * USAGE: mpirun -np 1 ./heat-coarse : -np 1 ./heat-fine
  */
 
-#include "../mui/mui.h"
+#include "mui.h"
 #include <algorithm>
 #include <fstream>
 
 int main( int argc, char ** argv ) {
-  const static int N = 21;
-  double u1[N], u2[N];
-
-  for ( int i = 1; i < 20; i++ ) u1[i] = 2 - i % 2 + ( i - 1 ) * 0.1; // spiky, skewed I.C.
+  const static int N = 12;
+  double u1[N], u2[N]; // note that it is not necessary to allocate space for node 5 & 6, but here I do it anyway to
+                       // simplify coding
+  for ( int i = 0; i <  4; i++ ) u1[i] = 0;
+  for ( int i = 8; i < 12; i++ ) u1[i] = 0;
 
   // Option 1: Declare MUI objects using specialisms (i.e. 1 = 1 dimensional, d = double)
-  mui::uniface1d interface( "mpi://fine/ifs" );
-  mui::sampler_exact1d<double> spatial_sampler;
+  mui::uniface1d interface( "mpi://coarse/ifs" );
+  mui::sampler_gauss1d<double> spatial_sampler( 1, 0.25 );
   mui::chrono_sampler_exact1d chrono_sampler;
   mui::point1d push_point;
   mui::point1d fetch_point;
 
   // Option 2: Declare MUI objects using templates in config.h
   // note: please update types stored in default_config in config.h first to 1-dimensional before compilation
-  //mui::uniface<mui::default_config> interface( "mpi://fine/ifs" );
-  //mui::sampler_exact<mui::default_config> spatial_sampler;
+  //mui::uniface<mui::default_config> interface( "mpi://coarse/ifs" );
+  //mui::sampler_gauss<mui::default_config> spatial_sampler( 1, 0.25);
   //mui::chrono_sampler_exact<mui::default_config> chrono_sampler;
   //mui::point<mui::default_config::REAL, 1> push_point;
   //mui::point<mui::default_config::REAL, 1> fetch_point;
 
-  double        k = 0.01, H = 1, h = 0.25; // H/h : grid stride for the coarse/fine grid
-  double *      u = u1, *v = u2;
-  std::ofstream fout( "solution-fine.txt" );
+  double k = 0.01, H = 1, h = 0.25; // H/h : grid stride for the coarse/fine grid
+  double *u = u1, *v = u2;
+  std::ofstream fout( "solution-coarse.txt" );
 
   fout << "TIMESTEP 0" << std::endl;
-  for ( int i = 1; i < 20; i++ ) fout << i * h + 3 * H << '\t' << u[i] << '\n';
+  for ( int i = 0; i <  4; i++ ) fout << i * H << '\t' << u[i] << '\n';
+  for ( int i = 8; i < 12; i++ ) fout << i * H << '\t' << u[i] << '\n';
 
   for ( int t = 1; t <= 100; t++ ) {
-    printf( "Fine grid step %d\n", t );
+    printf( "Coarse grid step %d\n", t );
 
-    // Push values to the MUI interface
-    for ( int i =  1; i <  8; i++ ) {
-      push_point[0] = i * h + 3 * H;
-      interface.push( "u", push_point, u[i] );
-    }
-    for ( int i = 13; i < 20; i++ ) {
-      push_point[0] = i * h + 3 * H;
-      interface.push( "u", push_point, u[i] );
-    }
+    // Push value stored in "u[3]" to the MUI interface
+    push_point[0] = 3 * H;
+    interface.push( "u", push_point, u[3] );
+    // Push value stored in "u[8]" to the MUI interface
+    push_point[0] = 8 * H;
+    interface.push( "u", push_point, u[8] );
     // Commit (transmit by MPI) the values
     interface.commit( t );
 
-    // Fetch the values from the interface (blocking until data at "t" exists according to chrono_sampler)
-    fetch_point[0] = 0 * h + 3 * H;
-    u[0] = interface.fetch( "u",  fetch_point, t, spatial_sampler, chrono_sampler );
-    fetch_point[0] = 20 * h + 3 * H;
-    u[20] = interface.fetch( "u", fetch_point, t, spatial_sampler, chrono_sampler );
+    // Fetch the values for u[4] and u[7] from the interface (blocking until data at "t" exists according to chrono_sampler)
+    fetch_point[0] = 4 * H;
+    u[4] = interface.fetch( "u", fetch_point, t, spatial_sampler, chrono_sampler );
+    fetch_point[0] = 7 * H;
+    u[7] = interface.fetch( "u", fetch_point, t, spatial_sampler, chrono_sampler );
 
-    // FDM calculation, all points are 'interior'
-    for ( int i = 1; i < 20; i++ ) v[i] = u[i] + k / ( h * h ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
+    // calculate 'interior' points
+    for ( int i = 1; i <  4; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
+    for ( int i = 8; i < 11; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
+    // calculate 'boundary' points
+    v[0]     = u[0    ] + k / ( H * H ) * ( u[1] + u[N - 1] - 2 * u[0    ] );
+    v[N - 1] = u[N - 1] + k / ( H * H ) * ( u[0] + u[N - 2] - 2 * u[N - 1] );
 
     // I/O
     std::swap( u, v );
     fout << "TIMESTEP " << t << std::endl;
-    for ( int i = 1; i < 20; i++ ) fout << i * h + 3 * H << '\t' << u[i] << '\n';
+    for ( int i = 0; i <  4; i++ ) fout << i * H << '\t' << u[i] << '\n';
+    for ( int i = 8; i < 12; i++ ) fout << i * H << '\t' << u[i] << '\n';
   }
 
   fout.close();

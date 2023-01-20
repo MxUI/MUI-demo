@@ -1,7 +1,8 @@
 /*****************************************************************************
-* Multiscale Universal Interface Code Coupling Library Demo 4                *
+* Multiscale Universal Interface Code Coupling Library                       *
 *                                                                            *
 * Copyright (C) 2019 Y. H. Tang, S. Kudo, X. Bian, Z. Li, G. E. Karniadakis  *
+*                    S. M. Longshaw                                          *
 *                                                                            *
 * This software is jointly licensed under the Apache License, Version 2.0    *
 * and the GNU General Public License version 3, you may use it according     *
@@ -35,33 +36,37 @@
 *                                                                            *
 * You should have received a copy of the GNU General Public License          *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
-******************************************************************************/
+*****************************************************************************/
 
-/**
- * @file multidomain.cpp
- * @author Y. H. Tang
- * @date 18 October 2016
- * @brief Test establishing uniface instances for multiple domains
- * using the create_uniface helper function.
- *
- * USAGE mpirun -np n1 ./multidomain domain_name1 interface1 interface2 ... : \
- *              -np n2 ./multidomain domain_name2 interface2 interface3 ... : \
- *              ...
- */
+#ifndef DEMO8_CONFIG_H
+#define DEMO8_CONFIG_H
 
-#include "../mui/mui.h"
+#include "util.h"
+#include "dim.h"
+#include "exception.h"
 
-int main( int argc, char ** argv ) {
-    mui::mpi_split_by_app();
+namespace mui {
 
-    std::string domain = argv[1];
+struct demo8_config {
 
-    std::vector<std::string> interfaces;
-    for ( int i = 2; i < argc; i++ ) interfaces.emplace_back( argv[i] );
+    /// Define the dimension of the interface
+	static const int D = 1;
 
-    // Option 1: Declare MUI objects using specialisms (i.e. 3 = 3 dimensional, d = double)
-    auto ifs = mui::create_uniface<mui::config_3d>( domain, interfaces );
+    /// MUI type define
+	using REAL = double;
+	using INT  = int;
+	using point_type = point<REAL,D>;
+	using time_type  = INT; // INT-typed time stamp might be an alternative
+	using data_types = type_list<int,double,float>;
 
-    // Option 2: Declare MUI interface and samplers using templates in config.h
-    //auto ifs = mui::create_uniface<mui::default_config>( domain, interfaces );
+    /// Switch of debug mode
+	static const bool DEBUG = false;
+	using EXCEPTION = exception_segv;
+	static const bool QUIET = false; // Enables minimal console output if true
+
+    /// Switch of fixed points/dynamic points
+	static const bool FIXEDPOINTS = false;
+};
 }
+
+#endif

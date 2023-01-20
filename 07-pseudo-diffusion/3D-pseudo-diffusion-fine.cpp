@@ -44,7 +44,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
-/// Include MUI header file and configure file 
+/// Include MUI header file and config file
 #include "mui.h"
 #include "demo7_config.h"
 

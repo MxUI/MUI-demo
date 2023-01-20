@@ -14,9 +14,8 @@
 #include <sstream>
 #include <sys/stat.h>
 
-/// Include MUI header file and configure file 
+#include "../10-6-pseudo-diffusion/demo6_config.h"
 #include "mui.h"
-#include "demo6_config.h"
 
 int main(int argc, char **argv) {
 

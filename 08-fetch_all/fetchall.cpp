@@ -47,7 +47,7 @@
  *        interpolation.
  */
 
-#include "../mui/mui.h"
+#include "mui.h"
 #include "demo8_config.h"
 
 int main( int argc, char ** argv ) {

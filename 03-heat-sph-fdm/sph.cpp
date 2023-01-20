@@ -58,7 +58,7 @@
  * USAGE: mpirun -np 1 ./sph : -np 1 ./fdm
  */
 
-#include "../mui/mui.h"
+#include "mui.h"
 #include <cstdio>
 #include <fstream>
 

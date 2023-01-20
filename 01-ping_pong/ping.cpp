@@ -1,8 +1,9 @@
 /*****************************************************************************
-* Multiscale Universal Interface Code Coupling Library                       *
+* Multiscale Universal Interface Code Coupling Library Demo 1                *
 *                                                                            *
-* Copyright (C) 2019 Y. H. Tang, S. Kudo, X. Bian, Z. Li, G. E. Karniadakis  *
-*                    S. M. Longshaw                                          *
+* Copyright (C) 2019 Y. H. Tang, S. Kudo, X. Bian, Z. Li, G. E. Karniadakis, *
+* R. Sawko*                                                                  *
+* (*IBM Research)                                                            *
 *                                                                            *
 * This software is jointly licensed under the Apache License, Version 2.0    *
 * and the GNU General Public License version 3, you may use it according     *
@@ -36,37 +37,51 @@
 *                                                                            *
 * You should have received a copy of the GNU General Public License          *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *
-*****************************************************************************/
+******************************************************************************/
 
-#ifndef DEMO8_CONFIG_H
-#define DEMO8_CONFIG_H
+/**
+ * @file ping.cpp
+ * @author Robert Sawko
+ * @date 10 June 2016
+ * @brief Classical ping-pong MPI communication demonstration using MUI as
+ * the interface.
+ *
+ * USAGE: mpirun -np 1 ./ping : -np 1 ./pong
+ */
 
-#include "../mui/util.h"
-#include "../mui/dim.h"
-#include "../mui/exception.h"
+#include "mui.h"
 
-namespace mui {
+int main() {
+  // Option 1: Declare MUI objects using specialisms (i.e. 1 = 1 dimensional, d = double)
+  mui::uniface1d interface( "mpi://ping/ifs" );
+  mui::sampler_exact1d<int> spatial_sampler;
+  mui::chrono_sampler_exact1d chrono_sampler;
+  mui::point1d push_point;
+  mui::point1d fetch_point;
 
-struct demo8_config {
+  // Option 2: Declare MUI objects using templates in config.h
+  // note: please update types stored in default_config in config.h first to 1-dimensional before compilation
+  //mui::uniface<mui::default_config> interface( "mpi://ping/ifs" );
+  //mui::sampler_exact<mui::default_config> spatial_sampler;
+  //mui::chrono_sampler_exact<mui::default_config> chrono_sampler;
+  //mui::point<mui::default_config::REAL, 1> push_point;
+  //mui::point<mui::default_config::REAL, 1> fetch_point;
 
-    /// Define the dimension of the interface
-	static const int D = 1;
+  int state = 0;
 
-    /// MUI type define
-	using REAL = double;
-	using INT  = int;
-	using point_type = point<REAL,D>;
-	using time_type  = INT; // INT-typed time stamp might be an alternative
-	using data_types = type_list<int,double,float>;
+  for ( int t = 0; t < 100; ++t ) {
+    state++;
+    // Push value stored in "state" to the MUI interface
+    push_point[0] = 0;
+    interface.push( "data", push_point, state );
+    // Commit (transmit by MPI) the value
+    interface.commit( t );
+    // Fetch the value from the interface (blocking until data at "t" exists according to chrono_sampler)
+    fetch_point[0] = 0;
+    state = interface.fetch( "data", fetch_point, t, spatial_sampler, chrono_sampler );
+  }
 
-    /// Switch of debug mode
-	static const bool DEBUG = false;
-	using EXCEPTION = exception_segv;
-	static const bool QUIET = false; // Enables minimal console output if true
+  printf( "Final ping state: %d\n", state );
 
-    /// Switch of fixed points/dynamic points
-	static const bool FIXEDPOINTS = false;
-};
+  return 0;
 }
-
-#endif
