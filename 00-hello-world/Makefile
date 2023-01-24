@@ -6,11 +6,13 @@ CFLAGS	= -std=c++11 -O3
 SCR = $(wildcard *.cpp)
 EXE = $(SCR:.cpp=)
 
+MUI_INC ?= 
+
 default: $(EXE)
 
 % : %.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -I$(MUI_INC) $< -o $@
 
 clean:
 	rm -f $(EXE)
-	
+

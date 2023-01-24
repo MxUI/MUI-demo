@@ -70,7 +70,7 @@ int main( int argc, char ** argv ) {
   // Option 1: Declare MUI objects using specialisms (i.e. 1 = 1 dimensional, d = double)
   mui::uniface1d interface( "mpi://coarse/ifs" );
   mui::sampler_gauss1d<double> spatial_sampler( 1, 0.25 );
-  mui::chrono_sampler_exact1d chrono_sampler;
+  mui::temporal_sampler_exact1d temporal_sampler;
   mui::point1d push_point;
   mui::point1d fetch_point;
 
@@ -78,7 +78,7 @@ int main( int argc, char ** argv ) {
   // note: please update types stored in default_config in config.h first to 1-dimensional before compilation
   //mui::uniface<mui::default_config> interface( "mpi://coarse/ifs" );
   //mui::sampler_gauss<mui::default_config> spatial_sampler( 1, 0.25);
-  //mui::chrono_sampler_exact<mui::default_config> chrono_sampler;
+  //mui::temporal_sampler_exact<mui::default_config> temporal_sampler;
   //mui::point<mui::default_config::REAL, 1> push_point;
   //mui::point<mui::default_config::REAL, 1> fetch_point;
 
@@ -102,11 +102,11 @@ int main( int argc, char ** argv ) {
     // Commit (transmit by MPI) the values
     interface.commit( t );
 
-    // Fetch the values for u[4] and u[7] from the interface (blocking until data at "t" exists according to chrono_sampler)
+    // Fetch the values for u[4] and u[7] from the interface (blocking until data at "t" exists according to temporal_sampler)
     fetch_point[0] = 4 * H;
-    u[4] = interface.fetch( "u", fetch_point, t, spatial_sampler, chrono_sampler );
+    u[4] = interface.fetch( "u", fetch_point, t, spatial_sampler, temporal_sampler );
     fetch_point[0] = 7 * H;
-    u[7] = interface.fetch( "u", fetch_point, t, spatial_sampler, chrono_sampler );
+    u[7] = interface.fetch( "u", fetch_point, t, spatial_sampler, temporal_sampler );
 
     // calculate 'interior' points
     for ( int i = 1; i <  4; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
