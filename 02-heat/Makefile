@@ -14,4 +14,4 @@ default: $(EXE)
 	$(CC) $(CFLAGS) -I$(MUI_INC) $< -o $@
 
 clean:
-	rm -f $(EXE) *.txt
+	rm -f $(EXE) solution-*.txt

@@ -48,7 +48,7 @@
  * USAGE: sh run_case.sh
  */
 
-#include "../mui/mui.h"
+#include "mui.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -126,7 +126,7 @@ void compute_solution(int nv,int it,double tt,double *xx,double *yy,double *us)
 void get_solution(int nv,int it,double tt,double *xx,double *yy,double *ur)
 {
   sampler_pseudo_nearest_neighbor2d<double> s1(1e-2);
-  chrono_sampler_exact2d  s2;
+  temporal_sampler_exact2d  s2;
   for(int i=0; i<nv; ++i){
     point2d loc( xx[i], yy[i] );
     ur[i] = interface->fetch("us",loc, it, s1, s2);

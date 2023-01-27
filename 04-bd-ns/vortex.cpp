@@ -92,7 +92,7 @@ int main( int argc, char ** argv ) {
   MPI_Comm_rank( world, &rank );
   MPI_Comm_size( world, &size );
   if ( size != 4 ) { // hard-coded the box to be decomposed into 2-by-2 ranks
-    printf( "This solver must be ran with 4 MPI ranks\n" );
+    printf( "This solver must be run with 4 MPI ranks\n" );
     exit( 0 ); // no need to MPI_Finalize - MUI hook will take care
   }
   int rank_x = rank / 2;
@@ -149,7 +149,7 @@ int main( int argc, char ** argv ) {
   bytes = out.str().size();
   MPI_Exscan( &bytes, &offset, 1, MPI_OFFSET, MPI_SUM, world );
   MPI_Status status;
-  printf( "rank %d size %d offset %d\n", rank, bytes, offset );
+  printf( "rank %d size %d offset %d\n", rank, static_cast<int>(bytes), static_cast<int>(offset) );
   MPI_File_write_at_all( fout, offset, out.str().c_str(), bytes, MPI_CHAR, &status );
   MPI_File_close( &fout );
 

@@ -40,7 +40,7 @@
 ******************************************************************************/
 
 /**
- * @file pong.cpp
+ * @file mui-pong.cpp
  * @author Robert Sawko
  * @date 10 June 2016
  * @brief Classical ping-pong MPI communication demonstration using MUI as

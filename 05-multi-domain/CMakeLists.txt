@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.9)
-project(fetchall VERSION 1.0 DESCRIPTION "Multiscale Universal Interface Demo 08" LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.0)
+project(multidomain VERSION 1.0 DESCRIPTION "Multiscale Universal Interface Demo 05" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,5 +13,5 @@ if(MUI_BASE_DIR)
   include_directories(${MUI_INCLUDE_DIR})
 endif()
 
-add_executable (fetchall fetchall.cpp)
-target_link_libraries (fetchall ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+add_executable (multidomain multidomain.cpp)
+target_link_libraries(multidomain ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})

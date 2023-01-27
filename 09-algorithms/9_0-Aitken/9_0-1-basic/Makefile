@@ -14,5 +14,4 @@ default: $(EXE)
 	$(CC) $(CFLAGS) -I$(MUI_INC) $< -o $@
 
 clean:
-	rm -f $(EXE)
-	
+	rm -rf $(EXE) make.log parallel.log core.* results_left* results_right*

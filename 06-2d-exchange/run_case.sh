@@ -1,3 +1,3 @@
 #!/bin/bash
-rm -rf *.dat
-mpirun -np 1 ./DomainCoarse : -np 1 ./DomainRefine
+
+mpirun -np 1 domain-coarse : -np 1 domain-refine

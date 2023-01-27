@@ -40,10 +40,6 @@
 #ifndef DEMO7_CONFIG_H
 #define DEMO7_CONFIG_H
 
-#include "util.h"
-#include "dim.h"
-#include "exception.h"
-
 namespace mui {
 
 struct demo7_config {
@@ -62,6 +58,7 @@ struct demo7_config {
 
   using point_type = point<REAL,D>;
   using time_type = REAL; // INT-typed time stamp might be an alternative
+  using iterator_type = INT; //- Typically INT for sub-iteration count
   using data_types = type_list<int,double,float>;
 };
 }

@@ -44,7 +44,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
-/// Include MUI header file and configure file 
+/// Include MUI header file and local configure file
 #include "mui.h"
 #include "demo7_config.h"
 
@@ -83,7 +83,6 @@ int main(int argc, char **argv) {
   double rSampler   = 0.4;                    // Define the search radius of the RBF sampler (radius size should be minimised)
   int basisFunc     = 0;                      // Specify RBF basis function 0-Gaussian; 1-WendlandC0; 2-WendlandC2; 3-WendlandC4; 4-WendlandC6
   bool conservative = false;                  // Enable conservative OR consistent RBF form
-  bool polynomial   = true;                   // Enable/disable polynomial terms during RBF matrix creation
   bool smoothFunc   = false;                  // Enable/disable RBF smoothing function during matrix creation
   bool readMatrix   = false;                  // Enable/disable reading the matrix in from file
   bool writeMatrix  = true;                   // Enable/disable writing of the matrix (if not reading)
@@ -167,9 +166,9 @@ int main(int argc, char **argv) {
 
   /// Define spatial and temporal samplers
   mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler, point2dvec,
-        basisFunc, conservative, polynomial, smoothFunc, readMatrix, writeMatrix, fileAddress,
+        basisFunc, conservative, smoothFunc, readMatrix, writeMatrix, fileAddress,
         cutoff, cgSolveTol, cgMaxIter, pouSize);
-  mui::chrono_sampler_exact<mui::demo7_config> chrono_sampler;
+  mui::temporal_sampler_exact<mui::demo7_config> temporal_sampler;
 
   /// Commit ZERO step of MUI
   ifs[1]->commit(0);
@@ -222,7 +221,7 @@ int main(int argc, char **argv) {
 
             /// Fetch data from the other solver
             scalar_field[i][j][k] = ifs[0]->fetch(name_fetch, locf, t,
-                spatial_sampler, chrono_sampler);
+                spatial_sampler, temporal_sampler);
 
             /// Calculate the integration of left boundary points of Domain 2
             intFaceLD2 += scalar_field[i][j][k];

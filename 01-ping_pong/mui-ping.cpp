@@ -40,13 +40,13 @@
 ******************************************************************************/
 
 /**
- * @file ping.cpp
+ * @file mui-ping.cpp
  * @author Robert Sawko
  * @date 10 June 2016
  * @brief Classical ping-pong MPI communication demonstration using MUI as
  * the interface.
  *
- * USAGE: mpirun -np 1 ./ping : -np 1 ./pong
+ * USAGE: mpirun -np 1 ./mui-ping : -np 1 ./mui-pong
  */
 
 #include "mui.h"

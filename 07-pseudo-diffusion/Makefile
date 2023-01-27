@@ -7,12 +7,12 @@ SCR = $(wildcard *.cpp)
 EXE = $(SCR:.cpp=)
 
 MUI_INC ?= 
+EIGEN_INC ?= 
 
 default: $(EXE)
 
 % : %.cpp
-	$(CC) $(CFLAGS) -I$(MUI_INC) $< -o $@
+	$(CC) $(CFLAGS) -I$(MUI_INC) -I$(EIGEN_INC) -DUSE_RBF $< -o $@
 
 clean:
-	rm -f $(EXE)
-	
+	rm -rf $(EXE) coupling_results rbfCoarseMatrix rbfFineMatrix

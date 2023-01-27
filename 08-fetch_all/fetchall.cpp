@@ -64,14 +64,12 @@ int main( int argc, char ** argv ) {
 
   // Option 1: Declare MUI objects using specialisms (i.e. 1 = 1 dimensional, d = double)
   //mui::uniface1d interface( argv[1] );
-  //mui::chrono_sampler_exact1d chrono_sampler;
-  //mui::point1d push_point;
-  //mui::point1d fetch_point;
+  //mui::temporal_sampler_exact1d temporal_sampler;
+  //std::vector<mui::point1d> push_locs(5);
 
-  // Option 2: Declare MUI interface and samplers using templates in config.h
-  // note: please update types stored in default_config in config.h first to 1-dimensional before compilation
+  // Option 2: Declare MUI interface and samplers using templates in demo8_config.h
   mui::uniface<mui::demo8_config> interface( argv[1] );
-  mui::chrono_sampler_exact<mui::demo8_config> chrono_sampler;
+  mui::temporal_sampler_exact<mui::demo8_config> temporal_sampler;
   std::vector<mui::point<mui::demo8_config::REAL, 1>> push_locs(5);
 
   printf( "domain %s pushed 5 values %s\n", argv[1], argv[2] );
@@ -86,11 +84,11 @@ int main( int argc, char ** argv ) {
   interface.commit( 0 );
 
   // Fetch the values from the interface using the fetch_points and fetch_values methods
-  // (blocking until data at "t=0" exists according to chrono_sampler)
+  // (blocking until data at "t=0" exists according to temporal_sampler)
   int time = 0;
 
-  std::vector<mui::point<mui::demo8_config::REAL, 1>> fetch_locs = interface.fetch_points<mui::demo8_config::REAL>( "data", time, chrono_sampler ); // Extract the locations stored in the interface at time=0
-  std::vector<double> fetch_vals = interface.fetch_values<mui::demo8_config::REAL>( "data", time, chrono_sampler ); // Extract the values stored in the interface at time=0
+  std::vector<mui::point<mui::demo8_config::REAL, 1>> fetch_locs = interface.fetch_points<mui::demo8_config::REAL>( "data", time, temporal_sampler ); // Extract the locations stored in the interface at time=0
+  std::vector<double> fetch_vals = interface.fetch_values<mui::demo8_config::REAL>( "data", time, temporal_sampler ); // Extract the values stored in the interface at time=0
 
   // Print returned values
   for(size_t i=0; i<fetch_locs.size(); i++) {

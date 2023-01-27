@@ -96,7 +96,7 @@ int main( int argc, char ** argv ) {
   // Option 1: Declare MUI objects using specialisms (i.e. 2 = 2 dimensional, d = double)
   mui::uniface2d interface( "mpi://brownian/ifs" );
   mui::sampler_gauss2d<double> spatial_sampler( r, r / 4 );
-  mui::chrono_sampler_exact2d chrono_sampler;
+  mui::temporal_sampler_exact2d temporal_sampler;
   mui::point2d push_point;
   mui::point2d fetch_point;
 
@@ -104,7 +104,7 @@ int main( int argc, char ** argv ) {
   // note: please update types stored in default_config in config.h first to 2-dimensional before compilation
   //mui::uniface<mui::default_config> interface( "mpi://brownian/ifs" );
   //mui::sampler_exact<mui::default_config> spatial_sampler;
-  //mui::chrono_sampler_exact<mui::default_config> chrono_sampler;
+  //mui::temporal_sampler_exact<mui::default_config> temporal_sampler;
   //mui::point<mui::default_config::REAL, 2> push_point;
   //mui::point<mui::default_config::REAL, 2> fetch_point;
 
@@ -125,8 +125,8 @@ int main( int argc, char ** argv ) {
     // obtain body force exerted by the coupled fluid solver
     fetch_point[0] = x;
     fetch_point[1] = y;
-    auto ux = interface.fetch( "ux", fetch_point, step, spatial_sampler, chrono_sampler );
-    auto uy = interface.fetch( "uy", fetch_point, step, spatial_sampler, chrono_sampler );
+    auto ux = interface.fetch( "ux", fetch_point, step, spatial_sampler, temporal_sampler );
+    auto uy = interface.fetch( "uy", fetch_point, step, spatial_sampler, temporal_sampler );
     auto fx = ux * drag;
     auto fy = uy * drag;
 

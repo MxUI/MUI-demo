@@ -1,11 +1,9 @@
 #!/bin/bash
 
-make -f Makefile_Heat_Transfer_Test
-
 START=$SECONDS
 
-mpirun -np 1 ./heat-right :\
-       -np 1 ./heat-left
+mpirun -np 1 heat-right :\
+       -np 1 heat-left
 
 DURATION=$(( SECONDS - START ))
 
