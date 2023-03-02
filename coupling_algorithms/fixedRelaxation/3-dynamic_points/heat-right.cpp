@@ -66,7 +66,7 @@ int main( int argc, char ** argv ) {
     MPI_Comm_rank( world, &rank );
     MPI_Comm_size( world, &size );
 
-    /// Create rbf matrix folder
+    /// Create folder
     std::string makedirMString = "results_right" + std::to_string(rank);
     mkdir(makedirMString.c_str(), 0777);
     std::string fileAddress(makedirMString);
@@ -83,7 +83,7 @@ int main( int argc, char ** argv ) {
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
-    chrono_sampler_exact1d  s2;
+    temporal_sampler_exact1d  s2;
 	algo_fixed_relaxation1d fr(0.01,ptsVluInit);
 
      // Print off a hello world message
@@ -102,13 +102,13 @@ int main( int argc, char ** argv ) {
     for ( int i = 40; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
     outputFileRight.close();
 
-    for ( int t = 1; t <= 1000; ++t ) {
-        printf( "Right grid step %d\n", t );
+    for ( int iter = 1; iter <= 1000; ++iter ) {
+        printf( "Right grid iteration %d\n", iter );
 
-            u[40] = interface.fetch( "u", 40 * H, t, s1, s2, fr );
+            u[40] = interface.fetch( "u", 40 * H, iter, s1, s2, fr );
 
-			if ((t>=100) && (t<200)) {
-				u[42] = interface.fetch( "u", 42 * H, t, s1, s2, fr  );
+			if ((iter>=100) && (iter<200)) {
+				u[42] = interface.fetch( "u", 42 * H, iter, s1, s2, fr  );
 			}
 
             // calculate 'interior' points
@@ -117,26 +117,26 @@ int main( int argc, char ** argv ) {
             v[N - 10] = 0.0;
             v[40]     = u[40    ];
 
-			if ((t>=100) && (t<200)) {
+			if ((iter>=100) && (iter<200)) {
 				v[42]     = u[42    ];
 			}
 
             // push data to the other solver
             interface.push( "u0", 60 * H, u[60] );
-            interface.commit( t );
+            interface.commit( iter );
         // I/O
         std::swap( u, v );
 
         /// Output
         std::ofstream outputFileRight;
         std::string filenameR = "results_right" + std::to_string(rank) + "/solution-right_FR_0"
-          + std::to_string(t) + ".csv";
+          + std::to_string(iter) + ".csv";
         outputFileRight.open(filenameR);
         outputFileRight << "\"X\",\"u\"\n";
 
 		outputFileRight << 40 * H << "," << u[40] << ", \n";
 
-		if ((t>=100) && (t<200)) {
+		if ((iter>=100) && (iter<200)) {
 			outputFileRight << 42 * H << "," << u[42] << ", \n";
 		}
 

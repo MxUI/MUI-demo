@@ -18,7 +18,7 @@ uniface.set_data_types({"data": mui4py.FLOAT,
                        "data_assign": mui4py.FLOAT})
 
 # Spatial and temporal samplers
-t_sampler_exact = mui4py.ChronoSamplerExact()
+t_sampler_exact = mui4py.TemporalSamplerExact()
 s_sampler_exact = mui4py.SamplerExact()
 
 # Push/fetch some data

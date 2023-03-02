@@ -66,10 +66,13 @@ int main( int argc, char ** argv ) {
     MPI_Comm_rank( world, &rank );
     MPI_Comm_size( world, &size );
 
-    /// Create rbf matrix folder
+    /// Create folder
     std::string makedirMString = "results_right" + std::to_string(rank);
     mkdir(makedirMString.c_str(), 0777);
     std::string fileAddress(makedirMString);
+    std::string makedirMIterString = "results_iteration_right" + std::to_string(rank);
+    mkdir(makedirMIterString.c_str(), 0777);
+    std::string fileAddressIter(makedirMIterString);
 
     double        k = 0.515, H = 1;
     double *      u = u1, *v = u2;
@@ -83,7 +86,7 @@ int main( int argc, char ** argv ) {
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
-    chrono_sampler_exact1d  s2;
+    temporal_sampler_exact1d  s2;
     algo_aitken1d aitken(0.01,1.0);
 
      // Print off a hello world message
@@ -102,49 +105,72 @@ int main( int argc, char ** argv ) {
     for ( int i = 40; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
     outputFileRight.close();
 
-    for ( int t = 1; t <= 1000; ++t ) {
-        printf( "Right grid step %d\n", t );
+    std::ofstream outputFileIterRight;
+    std::string filenameIterR = "results_iteration_right" + std::to_string(rank) + "/solution-right_AITKEN_0.csv";
+    outputFileIterRight.open(filenameIterR);
+    outputFileIterRight << "\"X\",\"u\"\n";
+    for ( int i = 40; i <  110; i+=10 ) outputFileIterRight << i * H << "," << u[i] << ", \n";
+    outputFileIterRight.close();
+    for ( int t = 1; t <= 10; ++t ) {
+		for ( int iter = 1; iter <= 100; ++iter ) {
+			printf( "Right grid time %d iteration %d\n", t, iter );
 
-            u[40] = interface.fetch( "u", 40 * H, t, s1, s2, aitken );
+				u[40] = interface.fetch( "u", 40 * H, t, iter, s1, s2, aitken );
 
-			if ((t>=10) && (t<50)) {
-				u[42] = interface.fetch( "u", 42 * H, t, s1, s2, aitken  );
+				if ((t>=4) && (t<6)) {
+					u[42] = interface.fetch( "u", 42 * H, t, iter, s1, s2, aitken  );
+				}
+
+				printf( "Right under relaxation factor at t= %d iter= %d is %f\n", t, iter, aitken.get_under_relaxation_factor(t,iter));
+				printf( "Right residual L2 Norm at t= %d iter= %d is %f\n", t, iter, aitken.get_residual_L2_Norm(t,iter));
+
+			 // calculate 'interior' points
+				for ( int i = 50; i <  110; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
+				// calculate 'boundary' points
+				v[N - 10] = 0.0;
+				v[40]     = u[40    ];
+
+				if ((t>=4) && (t<6)) {
+					v[42]     = u[42    ];
+				}
+
+				// push data to the other solver
+				interface.push( "u0", 60 * H, u[60] );
+				interface.commit( t, iter );
+			// I/O
+			std::swap( u, v );
+
+			/// Output
+			std::ofstream outputFileRight;
+			std::string filenameR = "results_iteration_right" + std::to_string(rank) + "/solution-right_AITKEN_"
+			  + std::to_string(((t-1)*100) + iter) + ".csv";
+			outputFileRight.open(filenameR);
+			outputFileRight << "\"X\",\"u\"\n";
+
+			outputFileRight << 40 * H << "," << u[40] << ", \n";
+
+			if ((t>=4) && (t<6)) {
+				outputFileRight << 42 * H << "," << u[42] << ", \n";
 			}
 
-            printf( "Right under relaxation factor at t= %d is %f\n", t, aitken.get_under_relaxation_factor(t));
-            printf( "Right residual L2 Norm at t= %d is %f\n", t, aitken.get_residual_L2_Norm(t));
-   
-         // calculate 'interior' points
-            for ( int i = 50; i <  110; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
-            // calculate 'boundary' points
-            v[N - 10] = 0.0;
-            v[40]     = u[40    ];
-
-			if ((t>=10) && (t<50)) {
-				v[42]     = u[42    ];
-			}
-
-            // push data to the other solver
-            interface.push( "u0", 60 * H, u[60] );
-            interface.commit( t );
-        // I/O
-        std::swap( u, v );
-
-        /// Output
-        std::ofstream outputFileRight;
-        std::string filenameR = "results_right" + std::to_string(rank) + "/solution-right_AITKEN_"
-          + std::to_string(t) + ".csv";
-        outputFileRight.open(filenameR);
-        outputFileRight << "\"X\",\"u\"\n";
+			for ( int i = 50; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
+			outputFileRight.close();
+		}
+		/// Output
+		std::ofstream outputFileRight;
+		std::string filenameR = "results_right" + std::to_string(rank) + "/solution-right_AITKEN_"
+		  + std::to_string(t) + ".csv";
+		outputFileRight.open(filenameR);
+		outputFileRight << "\"X\",\"u\"\n";
 
 		outputFileRight << 40 * H << "," << u[40] << ", \n";
 
-		if ((t>=10) && (t<50)) {
+		if ((t>=4) && (t<6)) {
 			outputFileRight << 42 * H << "," << u[42] << ", \n";
 		}
 
-        for ( int i = 40; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
-        outputFileRight.close();
+		for ( int i = 50; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
+		outputFileRight.close();
     }
 
     return 0;

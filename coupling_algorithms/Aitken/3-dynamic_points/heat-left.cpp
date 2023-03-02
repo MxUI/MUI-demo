@@ -52,7 +52,7 @@ int main( int argc, char ** argv ) {
     } else {
         std::cerr<<"left_AITKEN.csv missing" << std::endl;
         u1[0] = 1.;
-        for ( int i = 10; i <  70; i++ ) u1[i] = 0.;
+        for ( int i = 10; i <  70; i+=10 ) u1[i] = 0.;
     }
 
     inFile.close();
@@ -68,24 +68,27 @@ int main( int argc, char ** argv ) {
     MPI_Comm_rank( world, &rank );
     MPI_Comm_size( world, &size );
 
-    /// Create rbf matrix folder
+    /// Create folder
     std::string makedirMString = "results_left" + std::to_string(rank);
     mkdir(makedirMString.c_str(), 0777);
     std::string fileAddress(makedirMString);
+    std::string makedirMIterString = "results_iteration_left" + std::to_string(rank);
+    mkdir(makedirMIterString.c_str(), 0777);
+    std::string fileAddressIter(makedirMIterString);
 
     double        k = 0.515, H = 1;
     double *      u = u1, *v = u2;
 
     std::vector<std::pair<mui::point1d, double>> ptsVluInit;
 
-    for ( int i = 1; i <  7; i++ ) {
+    for ( int i = 10; i <  70; i+=10) {
         mui::point1d pt(i);
         ptsVluInit.push_back(std::make_pair(pt,u1[i]));
     }
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
-    chrono_sampler_exact1d  s2;
+    temporal_sampler_exact1d  s2;
     algo_aitken1d aitken(0.01,1.0);
 
      // Print off a hello world message
@@ -103,52 +106,75 @@ int main( int argc, char ** argv ) {
     outputFileLeft << "\"X\",\"u\"\n";
     for ( int i = 0; i <  70; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
     outputFileLeft.close();
+    std::ofstream outputFileIterLeft;
+    std::string filenameIterL = "results_iteration_left" + std::to_string(rank) + "/solution-left_AITKEN_0.csv";
+    outputFileIterLeft.open(filenameIterL);
+    outputFileIterLeft << "\"X\",\"u\"\n";
+    for ( int i = 0; i <  70; i+=10 ) outputFileIterLeft << i * H << "," << u[i] << ", \n";
+    outputFileIterLeft.close();
 
-    for ( int t = 1; t <= 1000; ++t ) {
-        printf( "Left grid step %d\n", t );
+    for ( int t = 1; t <= 10; ++t ) {
+		for ( int iter = 1; iter <= 100; ++iter ) {
+			printf( "Left grid time %d iteration %d\n", t, iter );
 
-            // push data to the other solver
-            interface.push( "u", 40, u[40]);
-            interface.commit( t );
+				// push data to the other solver
+				interface.push( "u", 40, u[40]);
+				interface.commit( t, iter );
 
-            u[60] = interface.fetch( "u0", 60 * H, t, s1, s2, aitken );
+				u[60] = interface.fetch( "u0", 60 * H, t, iter, s1, s2, aitken );
 
-			if ((t>=20) && (t<40)) {
-				u[58] = interface.fetch( "u0", 58 * H, t, s1, s2, aitken );
+				if ((t>=3) && (t<5)) {
+					u[58] = interface.fetch( "u0", 58 * H, t, iter, s1, s2, aitken );
+				}
+
+				printf( "Left under relaxation factor at t= %d iter= %d is %f\n", t, iter, aitken.get_under_relaxation_factor(t, iter));
+				printf( "Left residual L2 Norm at t= %d iter= %d is %f\n", t, iter, aitken.get_residual_L2_Norm(t, iter));
+
+				// calculate 'interior' points
+				for ( int i = 10; i <  60; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
+				// calculate 'boundary' points
+				v[0]     = 1.0 + std::sin(2*3.14*0.7962*t);
+
+				v[N - 10] = u[N - 10];
+
+				if ((t>=3) && (t<5)) {
+					v[58] = u[58];
+				}
+
+			// I/O
+			std::swap( u, v );
+			/// Output
+			std::ofstream outputFileLeft;
+			std::string filenameL = "results_iteration_left" + std::to_string(rank) + "/solution-left_AITKEN_"
+			  + std::to_string((t-1)*100 + iter) + ".csv";
+			outputFileLeft.open(filenameL);
+			outputFileLeft << "\"X\",\"u\"\n";
+			for ( int i = 0; i <  60; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
+
+			if ((t>=3) && (t<5)) {
+				outputFileLeft << 58 * H << "," << u[58] << ", \n";
 			}
 
-            printf( "Left under relaxation factor at t= %d is %f\n", t, aitken.get_under_relaxation_factor(t));
-            printf( "Left residual L2 Norm at t= %d is %f\n", t, aitken.get_residual_L2_Norm(t));
+			outputFileLeft << 60 * H << "," << u[60] << ", \n";
 
-            // calculate 'interior' points
-            for ( int i = 10; i <  60; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
-            // calculate 'boundary' points
-            v[0]     = 1.0;
+			outputFileLeft.close();
 
-            v[N - 10] = u[N - 10]; 
+		}
+		/// Output
+		std::ofstream outputFileLeft;
+		std::string filenameL = "results_left" + std::to_string(rank) + "/solution-left_AITKEN_"
+		  + std::to_string(t) + ".csv";
+		outputFileLeft.open(filenameL);
+		outputFileLeft << "\"X\",\"u\"\n";
+		for ( int i = 0; i <  60; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
 
-			if ((t>=20) && (t<40)) {
-				v[58] = u[58]; 
-			}
-
-        // I/O
-        std::swap( u, v );
-        /// Output
-        std::ofstream outputFileLeft;
-        std::string filenameL = "results_left" + std::to_string(rank) + "/solution-left_AITKEN_"
-          + std::to_string(t) + ".csv";
-        outputFileLeft.open(filenameL);
-        outputFileLeft << "\"X\",\"u\"\n";
-        for ( int i = 0; i <  60; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
-
-		if ((t>=20) && (t<40)) {
+		if ((t>=3) && (t<5)) {
 			outputFileLeft << 58 * H << "," << u[58] << ", \n";
 		}
 
 		outputFileLeft << 60 * H << "," << u[60] << ", \n";
 
-        outputFileLeft.close();
-
+		outputFileLeft.close();
     }
 
     return 0;

@@ -55,11 +55,10 @@ synchronised=False
 #Define parameters of the RBF sampler
 rSampler = 0.4                # Define the search radius of the RBF sampler (radius size should be balanced to try and maintain)
 baseFunc = 0                  # Specify RBF basis function 0-Gaussian; 1-WendlandC0; 2-WendlandC2; 3-WendlandC4; 4-WendlandC6
-conservative = false          # Enable conservative OR consistent RBF form
-polynomial = true             # Enable/disable polynomial terms during RBF matrix creation
-smoothFunc = false            # Enable/disable RBF smoothing function during matrix creation
-readMatrix = false            # Enable/disable reading the matrix in from file
-writeMatrix = true            # Enable/disable writing of the matrix (if not reading)
+conservative = False          # Enable conservative OR consistent RBF form
+smoothFunc = False            # Enable/disable RBF smoothing function during matrix creation
+readMatrix = False            # Enable/disable reading the matrix in from file
+writeMatrix = True            # Enable/disable writing of the matrix (if not reading)
 rbfMatrixFolder = "rbfCoarse" # Output folder for the RBF matrix files
 cutOff = 1e-9                 # Cut-off value for Gaussian RBF basis function
 cgSolveTol = 1e-6;            # Eigen Conjugate Gradient solver tolerance
@@ -143,8 +142,8 @@ MUI_Interfaces["interface2D01"].announce_recv_span(0, (steps+1), recv_span, sync
 MUI_Interfaces["interface2D02"].announce_send_span(0, (steps+1), send_span, synchronised)
 
 # Spatial/temporal samplers
-t_sampler = mui4py.ChronoSamplerExact()
-s_sampler = mui4py.SamplerRbf(rSampler, point2dList, baseFunc, conservative, polynomial, smoothFunc, readMatrix, writeMatrix, rbfMatrixFolder, cutOff, cgSolveTol, cgMaxIt, pouSize)
+t_sampler = mui4py.TemporalSamplerExact()
+s_sampler = mui4py.SamplerRbf(rSampler, point2dList, baseFunc, conservative, smoothFunc, readMatrix, writeMatrix, rbfMatrixFolder, cutOff, cgSolveTol, cgMaxIter, pouSize)
 
 # Commit ZERO step
 MUI_Interfaces["interface2D02"].commit(0)
