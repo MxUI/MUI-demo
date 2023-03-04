@@ -3,3 +3,8 @@
 /.settings
 mui/*
 !/mui/README 
+*/CMakeCache.txt
+*/CMakeFiles/
+*/cmake_install.cmake
+*.txt
+*.dat
