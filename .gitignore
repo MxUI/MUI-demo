@@ -8,3 +8,10 @@ mui/*
 */cmake_install.cmake
 *.txt
 *.dat
+*/mui-ping
+*/mui-pong
+*/brownian
+*/vortex
+*/multidomain
+*/domain-coarse
+*/domain-refine
