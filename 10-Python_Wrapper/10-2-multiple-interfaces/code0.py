@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import time
 import mui4py
+from mpi4py import MPI
 domain = sys.argv[1]
 
 # Configuration for the interfaces
@@ -15,7 +16,7 @@ rank = appcomm.Get_rank()
 # Set up interfaces by type
 # 1D interfaces
 ifs = []
-ifaces1d = mui4py.create_unifaces(domain, ifs, config1d) 
+ifaces1d = mui4py.create_unifaces(domain, ifs, config1d, MPI.COMM_WORLD)
 
 # 2D interfaces
 ifs = ["I1", "I2"]
