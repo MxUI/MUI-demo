@@ -8,11 +8,12 @@
  */
 
 #include "mui.h"
+#include "demo5_config.h"
 
 int main(int argc, char ** argv) {
     using namespace mui;
 
-	uniface3d interface( "mpi://PUSHER_FETCHER_0/COUPLING"  );
+	uniface<demo5_config> interface( "mpi://PUSHER_FETCHER_0/COUPLING"  );
 
 	MPI_Comm  world = mui::mpi_split_by_app();
 
@@ -74,15 +75,15 @@ int main(int argc, char ** argv) {
 	}
 
     // annouce send span
-    geometry::box3d send_region( {local_x0, local_y0, local_z0}, {local_x1, local_y1, local_z1} );
-    geometry::box3d recv_region( {local_x2, local_y2, local_z2}, {local_x3, local_y3, local_z3} );
+    geometry::box<demo5_config> send_region( {local_x0, local_y0, local_z0}, {local_x1, local_y1, local_z1} );
+    geometry::box<demo5_config> recv_region( {local_x2, local_y2, local_z2}, {local_x3, local_y3, local_z3} );
     printf( "{PUSHER_FETCHER_0} send region for rank %d: %lf %lf %lf - %lf %lf %lf\n", rank, local_x0, local_y0, local_z0, local_x1, local_y1, local_z1 );
     interface.announce_send_span( 0, steps, send_region );
     interface.announce_recv_span( 0, steps, recv_region );
 
 	// define spatial and temporal samplers
-	sampler_gauss3d<double> s1( r, r / 4 );
-	chrono_sampler_exact3d  s2;
+    sampler_gauss<demo5_config> s1( r, r / 4  );
+	temporal_sampler_exact<demo5_config>  s2;
 	
 	// commit ZERO step
 	interface.commit(0);
@@ -110,8 +111,8 @@ int main(int argc, char ** argv) {
             for ( int j = 0; j < Ny; ++j ) {
 				for ( int k = 0; k < Nz; ++k ) {
 					point3d locf( pf[i][j][k][0], pf[i][j][k][1], pf[i][j][k][2] );
-					python_fetch[i][j][k] = interface.fetch( name_fetch, locf, 
-						n, 
+					python_fetch[i][j][k] = interface.fetch( name_fetch, locf,
+						n,
 						s1, 
 						s2 );
 				}

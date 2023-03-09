@@ -62,7 +62,7 @@ for i in range(Ni):
 fetch_vals = np.zeros(Npoints)
 
 # Spatial/temporal samplers
-t_sampler = mui4py.ChronoSamplerExact()
+t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(r)
 
 # # Fetch ZERO step

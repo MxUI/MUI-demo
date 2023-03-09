@@ -11,7 +11,7 @@ mui4py.set_default_config(config)
 URI = "mpi://" + domain + "/ifs1"
 uniface = mui4py.Uniface(uri=URI)
 uniface.set_data_types({"data": mui4py.STRING})
-t_sampler = mui4py.ChronoSamplerExact
+t_sampler = mui4py.TemporalSamplerExact
 s_sampler = mui4py.SamplerExact
 synchronised=False
 # Rank to geometry mapping
