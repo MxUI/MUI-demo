@@ -15,3 +15,6 @@ mui/*
 */multidomain
 */domain-coarse
 */domain-refine
+*.log
+PUSHER_FETCHER_0
+build/
