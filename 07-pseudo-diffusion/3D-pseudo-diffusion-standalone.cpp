@@ -37,6 +37,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *	
 ******************************************************************************/	
 
+/**
+ * @file 3D-pseudo-diffusion-standalone.cpp
+ * @author W. Liu
+ * @date 01 November 2019
+ * @brief The standalone code of the 3D pseudo diffusion case, for comparison purpose.
+ *
+ */
+
 #include <math.h>
 #include <string>
 #include <iostream>
