@@ -3,4 +3,4 @@
 - Push/fetch variants.
 
 ## Notes:
-- To run the example `bash run.sh`.
+- To run the example `bash run_case.sh`.

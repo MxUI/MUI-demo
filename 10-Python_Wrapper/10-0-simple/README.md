@@ -4,5 +4,5 @@
 - How to use `fetch_points()`
 
 ## Notes
-- To run the example `bash run.sh`.
+- To run the example `bash run_case.sh`.
 - You must have in PYTHONPATH the **mui4py** module directory.

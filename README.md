@@ -13,14 +13,14 @@ To run demos:
 
 ```bash
 cd <repository_directory>/<demo_directory>
-./run_case.sh
+bash run_case.sh
 ```
 A log file "output.log" will be generated.
 
 In case you encounter an error related to `mui.h` not being found during compilation with CMake, you can resolve this issue by specifying the path to MUI using the command:
 
 ```bash
-./run_case.sh /path/to/MUI
+bash run_case.sh /path/to/MUI
 ```
 
 For demo 02-heat, you can view the time evolution of the simulation by running the vizmulti.m MATLAB script and dragging the slider bar in the figure.
@@ -40,7 +40,7 @@ To clean the demo directory:
 
 ```bash
 cd <repository_directory>/<demo_directory>
-./clean_case.sh
+bash clean_case.sh
 ```
 
 ## Publication

@@ -45,5 +45,5 @@
 ```
 
 ## Notes:
-- To run the example `bash run.sh`.
+- To run the example `bash run_case.sh`.
 - Empty fetched values indicate the value is not available for the queried point in the rank.

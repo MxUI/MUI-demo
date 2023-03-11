@@ -4,7 +4,7 @@
 - Simple profiling for `fetch()`and `push()`.
 
 ## Notes:
-- To run the example `bash run.sh`. 
+- To run the example `bash run_case.sh`.
 
 > Nt (time steps), Ni (i coords) and Nj (j coords) can be changed in the script.
 

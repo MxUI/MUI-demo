@@ -23,3 +23,4 @@
 ## Notes
 - A single interface can only be shared by a pair of codes.
 - All codes has to call `create_unifaces()` for each type of interface used among all processes, even if a code itself do not use that particular interface. This is due to the need of an internal collective MPI call on the **MPI_COMM_WORLD** communicator.
+- code0.py passes `MPI.COMM_WORLD` as one of the parameters of `create_unifaces()` to test the default argument of the `create_unifaces()` function.
