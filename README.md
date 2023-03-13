@@ -5,48 +5,42 @@ This repository contains demos and example solvers that make use of the MUI Mult
 
 The source code is dual-licensed under both GPL v3 and Apache v2.
 
-## Installation
+## Run Demos
 
-To run the examples you need a `mpic++` wrapper with C++11 enabled backend.
+To run the demos you need a copy of the [MUI code](https://github.com/MxUI/MUI), a `mpic++` wrapper with C++11 enabled backend. You also need to install C, FORTRAN and/or Python wrappers of MUI if you want to run demos for wrappers.
 
-To run the first example 0-hello-world:
+To run demos:
 
 ```bash
-# clone the repository
-cd <repository_directory>
-git submodule update --init  # to obtain MUI
-cd 0-hello-world
-make
-mpirun -np 1 ./hello mpi://domain1/ifs 0.618 : -np 1 ./hello mpi://domain2/ifs 1.414
+cd <repository_directory>/<demo_directory>
+bash run_case.sh
+```
+A log file "output.log" will be generated.
+
+In case you encounter an error related to `mui.h` not being found during compilation with CMake, you can resolve this issue by specifying the path to MUI using the command:
+
+```bash
+bash run_case.sh /path/to/MUI
 ```
 
-To run 2-heat:
+For demo 02-heat, you can view the time evolution of the simulation by running the vizmulti.m MATLAB script and dragging the slider bar in the figure.
 
 ```bash
-cd <repository_directory>/1-heat
-make
-mpirun -np 1 ./heat-coarse : -np 1 ./heat-fine
-matlab -r vizmulti
+matlab -r Resources/vizmulti
+```
+For demos 03-heat-sph-fdm and 04-bd-ns, you can view the result by using gnuplot with the following command. Also checkout flow.png in demo 04-bd-ns for a visualisation of the flow field:
+
+```bash
+gnuplot -p Resources/plot.gp
 ```
 
-You can view the time evolution of the simulation by running the vizmulti.m MATLAB script and dragging the slider bar in the figure.
+For demos 09-algorithms, Paraview state file will be automatically executed to display the results after running the code.
 
-To run 4-bd-ns:
-
-```bash
-cd <repository_directory>/4-bd-ns
-make
-mpirun -np 1 ./brownian : -np 4 ./vortex
-gnuplot -p plot.gp
-```
-
-Also checkout flow.png for a visualization of the flow field.
-
-To run 5-multi-domain:
+To clean the demo directory:
 
 ```bash
-cd <repository_directory>/5-multi-domain
-make
+cd <repository_directory>/<demo_directory>
+bash clean_case.sh
 ```
 
 ## Publication

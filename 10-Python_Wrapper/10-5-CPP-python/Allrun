@@ -1,6 +1,0 @@
-#!/bin/bash
-
-make > make.log 2>&1
-
-mpirun -np 2 ./PUSHER_FETCHER_0 :\
-		-np 2 python3 -m mpi4py PUSHER_FETCHER_1.py
