@@ -69,6 +69,7 @@ MPI_COMM_WORLD = mui4py.mpi_split_by_app()
 rank = MPI_COMM_WORLD.Get_rank()
 
 steps = 10				# number of time steps
+iterations = 10			# number of iterations per step
 r = 1.					# search radius
 Ni = int(1)
 Nj = int(11)
@@ -99,27 +100,47 @@ for i in range(Ni):
 
 fetch_vals = np.zeros(Npoints)
 
+# Define and announce MUI send/receive span
+send_span = mui4py.geometry.Box([0, 0, 0], [10, 20, 1])
+recv_span = mui4py.geometry.Box([0, 0, 0], [10, 20, 1])
+iface.announce_recv_span(0, (steps+1), recv_span, False)
+iface.announce_send_span(0, (steps+1), send_span, False)
+
 # Spatial/temporal samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(r)
 
 # # Fetch ZERO step
-iface.barrier(0)
+iface.barrier(0,0)
 
 for n in range(1, steps):
+	for iter in range(1, iterations):
+		if rank == 0:
+			print("\n{PUSHER_FETCHER_1} Step ", n, "Iteration ", iter, flush=True)
 
-	if rank == 0:
-		print("\n{PUSHER_FETCHER_1} Step ", n, flush=True)
+		# MUI Push boundary points and commit current steps
+		for i, p in enumerate(points_push):
+			iface.push("data_python", p, push_values[i])
+		commit_return = iface.commit(n,iter)
+		if (rank == 0):
+			print ("{PUSHER_FETCHER_1} commit_return: ", commit_return)
 
-	# MUI Push boundary points and commit current steps
-	for i, p in enumerate(points_push):
-		iface.push("data_python", p, push_values[i])
-	iface.commit(n)
+		iface.forecast(n,iter)
 
-    # MUI Fetch internal points
-	fetch_vals  = iface.fetch_many("data_cpp", points_fetch, n,
-									s_sampler, 
-									t_sampler)
+		is_ready_return = iface.is_ready("data_cpp", n, iter)
+		if (rank == 0):
+			print ("{PUSHER_FETCHER_1} is_ready_return: ", is_ready_return)
 
-	if (rank == 0):
-		print ("{PUSHER_FETCHER_1} cpp_fetch: ", fetch_vals)
+	    # MUI Fetch internal points
+		fetch_vals  = iface.fetch_many("data_cpp", points_fetch, n, iter,
+										s_sampler,
+										t_sampler)
+
+		if (n > 2):
+			t = (n-2, iter)
+			iface.forget(t)
+
+		iface.set_memory(2)
+
+		if (rank == 0):
+			print ("{PUSHER_FETCHER_1} cpp_fetch: ", fetch_vals)
