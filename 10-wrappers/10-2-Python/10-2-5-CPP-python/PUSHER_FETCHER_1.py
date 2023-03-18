@@ -82,8 +82,11 @@ c_0 = 0
 for i in range(Ni):
 	for j in range(Nj):
 		for k in range(Nk):
-			points_push[c_0] = [i+4.0, j*0.1, k+0.0]
+			points_push[c_0] = [i+4.0+rank, j*0.1, k+0.0]
 			c_0 += 1
+
+# define fetch points
+fetch_points_only = np.zeros((Npoints, dimensionMUI))
 
 push_values = np.zeros(Npoints)
 for i in range(Npoints):
@@ -95,52 +98,65 @@ c_1 = 0
 for i in range(Ni):
 	for j in range(Nj):
 		for k in range(Nk):
-			points_fetch[c_1] = [i+6.5, j*0.1, k+0.0]
+			points_fetch[c_1] = [i+6.0+rank, j*0.1, k+0.0]
 			c_1 += 1		
 
 fetch_vals = np.zeros(Npoints)
+fetch_vals_only = np.zeros(Npoints)
 
 # Define and announce MUI send/receive span
-send_span = mui4py.geometry.Box([0, 0, 0], [10, 20, 1])
-recv_span = mui4py.geometry.Box([0, 0, 0], [10, 20, 1])
-iface.announce_recv_span(0, (steps+1), recv_span, False)
-iface.announce_send_span(0, (steps+1), send_span, False)
+send_span = mui4py.geometry.Box([i+4.0+rank, 0, 0], [i+4.0+rank, 20, 1])
+recv_span = mui4py.geometry.Box([i+6.0+rank, 0, 0], [i+6.0+rank, 20, 1])
+iface.announce_recv_span(1, (steps), recv_span, False)
+iface.announce_send_span(1, (steps), send_span, False)
 
 # Spatial/temporal samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(r)
 
 # # Fetch ZERO step
-iface.barrier(0,0)
+iface.barrier(0, 0)
 
 for n in range(1, steps):
 	for iter in range(1, iterations):
 		if rank == 0:
 			print("\n{PUSHER_FETCHER_1} Step ", n, "Iteration ", iter, flush=True)
 
-		# MUI Push boundary points and commit current steps
-		for i, p in enumerate(points_push):
-			iface.push("data_python", p, push_values[i])
+		# MUI Push boundary points and commit current steps -- both `push()` and `push_many()` have been tested here
+		if (n < 5):
+			for i, p in enumerate(points_push):
+				iface.push("data_python", p, push_values[i])
+		else:
+			iface.push_many("data_python", points_push, push_values)
+
 		commit_return = iface.commit(n,iter)
 		if (rank == 0):
 			print ("{PUSHER_FETCHER_1} commit_return: ", commit_return)
 
-		iface.forecast(n,iter)
-
+		# MUI is_ready function
 		is_ready_return = iface.is_ready("data_cpp", n, iter)
 		if (rank == 0):
 			print ("{PUSHER_FETCHER_1} is_ready_return: ", is_ready_return)
 
-	    # MUI Fetch internal points
-		fetch_vals  = iface.fetch_many("data_cpp", points_fetch, n, iter,
-										s_sampler,
-										t_sampler)
+		# MUI Fetch internal points -- both `fetch()` and `fetch_many()` have been tested here
+		if (n < 5):
+			for i, p in enumerate(fetch_vals):
+				fetch_vals[i]  = iface.fetch("data_cpp", points_fetch[i], n, iter,
+												s_sampler,
+												t_sampler)
+		else:
+			fetch_vals  = iface.fetch_many("data_cpp", points_fetch, n, iter,
+											s_sampler,
+											t_sampler)
 
+		# MUI forget function
 		if (n > 2):
 			t = (n-2, iter)
 			iface.forget(t)
 
+		# MUI set_memory function
 		iface.set_memory(2)
 
+		# Print fetched values
 		if (rank == 0):
 			print ("{PUSHER_FETCHER_1} cpp_fetch: ", fetch_vals)
