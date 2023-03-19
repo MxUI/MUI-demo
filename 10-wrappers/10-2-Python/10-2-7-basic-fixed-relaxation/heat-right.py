@@ -130,7 +130,6 @@ with open(filenameR, "w") as outputFileRight:
 for iter in range(1, 1001):
     print(f"Right grid iteration {iter}")
     u1[4] = iface.fetch("u", 4 * H, iter, s_sampler, t_sampler, fr_algorithm)
-#    u1[4] = iface.fetch("u", 4 * H, iter, s_sampler, t_sampler)
 
     # calculate 'interior' points
     for i in range(5, 10):
