@@ -162,7 +162,7 @@ for t in range(1, 11):
         u1, u2 = u2, u1
 
         # Output
-        filenameR = f"results_iteration_right{rank}/solution-right_AITKEN_{iter}.csv"
+        filenameR = f"results_iteration_right{rank}/solution-right_AITKEN_{((t-1)*100) + iter}.csv"
         with open(filenameR, "w") as outputFileRight:
             outputFileRight.write("\"X\",\"u\"\n")
             outputFileRight.write(f"{40*H},{u1[40]},\n")
@@ -172,7 +172,7 @@ for t in range(1, 11):
                 outputFileRight.write(f"{i*H},{u1[i]},\n")
 
     # Output
-    filenameR = f"results_right{rank}/solution-right_AITKEN_{iter}.csv"
+    filenameR = f"results_right{rank}/solution-right_AITKEN_{t}.csv"
     with open(filenameR, "w") as outputFileRight:
         outputFileRight.write("\"X\",\"u\"\n")
         outputFileRight.write(f"{40*H},{u1[40]},\n")
