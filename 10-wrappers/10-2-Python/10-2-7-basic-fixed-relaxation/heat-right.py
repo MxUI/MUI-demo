@@ -58,8 +58,6 @@ import os
 # o: interface points
 # -: single domain zone
 # =: overlapping zone
-#
-# USAGE: mpirun -np 1 ./heat-left : -np 1 ./heat-right
 
 # MUI parameters
 dimensionMUI = 1

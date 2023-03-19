@@ -61,8 +61,6 @@
  * =: overlapping zone
  */
 
-// USAGE: mpirun -np 1 ./heat-left : -np 1 ./heat-right
-
 int main( int argc, char ** argv ) {
     using namespace mui;
 
