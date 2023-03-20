@@ -119,7 +119,7 @@ for i in range(40, 110, 10):
 # Samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(30)
-a_algorithm = mui4py.AlgorithmAitken(0.01, 1.0, MPI_COMM_WORLD, ptsVluInit, 0.0)
+a_algorithm = mui4py.AlgorithmAitken(0.01, 1.0, MPI_COMM_WORLD, ptsVluInit, 0.0, config=config3d)
 
 # Print off a hello world message
 print("Hello world from Right rank ", rank, " out of ", size, " MUI processors\n")
