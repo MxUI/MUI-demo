@@ -67,6 +67,7 @@ int main(int argc, char ** argv) {
     double r    = 1e-10;                      // search radius	
     int Nt = Nx * Ny * Nz; // total time steps	
     int steps = 10; // total time steps
+    int iterations = 10; // total iterations per step
 	double local_x0 = 6; // local origin
     double local_y0 = 0;
 	double local_z0 = 0;
@@ -85,7 +86,7 @@ int main(int argc, char ** argv) {
 	for ( int i = 0; i < Nx; ++i ) {
         for ( int j = 0; j < Ny; ++j ) {
 			for ( int k = 0; k < Nz; ++k ) {
-				double x = 6.0;
+				double x = 6.0+rank;
 				double y = j * 0.1;
 				double z = 0.0;
 				pp[i][j][k][0] = x;
@@ -100,7 +101,7 @@ int main(int argc, char ** argv) {
 	for ( int i = 0; i < Nx; ++i ) {
         for ( int j = 0; j < Ny; ++j ) {
 			for ( int k = 0; k < Nz; ++k ) {
-				double x = 4.0;
+				double x = 4.0+rank;
 				double y = j * 0.1;
 				double z = 0.0;
 				pf[i][j][k][0] = x;
@@ -115,55 +116,58 @@ int main(int argc, char ** argv) {
     geometry::box<demo5_config> send_region( {local_x0, local_y0, local_z0}, {local_x1, local_y1, local_z1} );
     geometry::box<demo5_config> recv_region( {local_x2, local_y2, local_z2}, {local_x3, local_y3, local_z3} );
     printf( "{PUSHER_FETCHER_0} send region for rank %d: %lf %lf %lf - %lf %lf %lf\n", rank, local_x0, local_y0, local_z0, local_x1, local_y1, local_z1 );
-    interface.announce_send_span( 0, steps, send_region );
-    interface.announce_recv_span( 0, steps, recv_region );
+    interface.announce_send_span( 1, steps, send_region );
+    interface.announce_recv_span( 1, steps, recv_region );
 
 	// define spatial and temporal samplers
     sampler_gauss<demo5_config> s1( r, r / 4  );
 	temporal_sampler_exact<demo5_config>  s2;
 	
 	// commit ZERO step
-	interface.commit(0);
+	interface.commit(0, 0);
 
 	// Begin time loops
-    for ( int n = 0; n < steps; ++n ) {
+    for ( int n = 1; n < steps; ++n ) {
+		for ( int iter = 1; iter < iterations; ++iter ) {
 
-		printf("\n");
-		printf("{PUSHER_FETCHER_0} %d Step ", n );	
+			printf("\n");
+			printf("{PUSHER_FETCHER_0} %d Step %d Iteration", n, iter );
+			printf("\n");
 
-		// push data to the other solver
-		for ( int i = 0; i < Nx; ++i ) {
-            for ( int j = 0; j < Ny; ++j ) {
-				for ( int k = 0; k < Nz; ++k ) {
-					point3d locp( pp[i][j][k][0], pp[i][j][k][1], pp[i][j][k][2] );
-					interface.push( name_push, locp, cpp_push[i][j][k] );
+			// push data to the other solver
+			for ( int i = 0; i < Nx; ++i ) {
+				for ( int j = 0; j < Ny; ++j ) {
+					for ( int k = 0; k < Nz; ++k ) {
+						point3d locp( pp[i][j][k][0], pp[i][j][k][1], pp[i][j][k][2] );
+						interface.push( name_push, locp, cpp_push[i][j][k] );
+					}
 				}
-            }
-        }
+			}
 
-        int sent = interface.commit( n );
+			int sent = interface.commit( n , iter );
 
-		// push data to the other solver
-		for ( int i = 0; i < Nx; ++i ) {
-            for ( int j = 0; j < Ny; ++j ) {
-				for ( int k = 0; k < Nz; ++k ) {
-					point3d locf( pf[i][j][k][0], pf[i][j][k][1], pf[i][j][k][2] );
-					python_fetch[i][j][k] = interface.fetch( name_fetch, locf,
-						n,
-						s1, 
-						s2 );
+			// push data to the other solver
+			for ( int i = 0; i < Nx; ++i ) {
+				for ( int j = 0; j < Ny; ++j ) {
+					for ( int k = 0; k < Nz; ++k ) {
+						point3d locf( pf[i][j][k][0], pf[i][j][k][1], pf[i][j][k][2] );
+						python_fetch[i][j][k] = interface.fetch( name_fetch, locf,
+							n,
+							iter,
+							s1,
+							s2 );
+					}
 				}
-            }
-        }
+			}
 
-		for ( int i = 0; i < Nx; ++i ) {
-			for ( int j = 0; j < Ny; ++j ) {
-				for ( int k = 0; k < Nz; ++k ) {
-					printf( "{PUSHER_FETCHER_0} python_fetch[%d][%d][%d]: %lf\n", i, j, k, python_fetch[i][j][k] );
+			for ( int i = 0; i < Nx; ++i ) {
+				for ( int j = 0; j < Ny; ++j ) {
+					for ( int k = 0; k < Nz; ++k ) {
+						printf( "{PUSHER_FETCHER_0} python_fetch[%d][%d][%d]: %lf\n", i, j, k, python_fetch[i][j][k] );
+					}
 				}
 			}
 		}
-
 	}
 
     return 0;
