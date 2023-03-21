@@ -144,6 +144,9 @@ for t in range(1, 11):
         if ((t>=4) and (t<6)):
             u1[42] = iface.fetch("u", 42 * H, t, iter, s_sampler, t_sampler, a_algorithm)
 
+        print(f"Right under relaxation factor at t= {t} iter= {iter} is {a_algorithm.get_under_relaxation_factor(t, iter)}")
+        print(f"Right residual L2 Norm at t= {t} iter= {iter} is {a_algorithm.get_residual_L2_Norm(t, iter)}")
+
         # calculate 'interior' points
         for i in range(50, 100, 10):
             u2[i] = u1[i] + k / (H * H) * (u1[i - 10] + u1[i + 10] - 2 * u1[i])
