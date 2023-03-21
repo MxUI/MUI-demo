@@ -119,7 +119,7 @@ for i in range(40, 110, 10):
 # Samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(30)
-a_algorithm = mui4py.AlgorithmAitken(0.01, 1.0, MPI_COMM_WORLD, ptsVluInit, 0.0, config=config3d)
+a_algorithm = mui4py.AlgorithmAitken(0.01, 1.0, MPI_COMM_WORLD, ptsVluInit, 0.0)
 
 # Print off a hello world message
 print("Hello world from Right rank ", rank, " out of ", size, " MUI processors\n")
@@ -143,9 +143,6 @@ for t in range(1, 11):
         
         if ((t>=4) and (t<6)):
             u1[42] = iface.fetch("u", 42 * H, t, iter, s_sampler, t_sampler, a_algorithm)
-
-        print(f"Right under relaxation factor at t= {t} iter= {iter} is {a_algorithm.get_under_relaxation_factor(t, iter)}")
-        print(f"Right residual L2 Norm at t= {t} iter= {iter} is {a_algorithm.get_residual_L2_Norm(t, iter)}")
 
         # calculate 'interior' points
         for i in range(50, 100, 10):
