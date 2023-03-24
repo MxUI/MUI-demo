@@ -1,7 +1,7 @@
-# MUI Python Wrapper Demo: 10-2-5-Cpp-Python
-This demo of the Python wrapper of MUI Multiscale Universal Interface is to exchange data between a C++ code and a Python code by using Python wrapper of MUI. 
+# MUI Python Wrapper Demo: 10-2-5-dual-time-types
+This demo of the Python wrapper of MUI Multiscale Universal Interface is to exchange data with dual time types between a C++ code and a Python code by using Python wrapper of MUI. 
 
-This demo shows how to use the Python wrapper to exchange data between C++ and Python codes;
+This demo shows how to use the Python wrapper to exchange data with dual time types  between C++ and Python codes;
 
 ## Licensing
 
