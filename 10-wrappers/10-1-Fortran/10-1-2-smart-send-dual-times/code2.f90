@@ -75,8 +75,8 @@ program main
   character(len=1024) :: appname = "PUSHER_FETCHER_2"
   character(len=1024) :: uriheader = "mpi://"
   character(len=1024) :: uridomain = "/interface"
-  character(len=1024) :: name_fetch = "pressure"
-  character(len=1024) :: name_push = "displacement"
+  character(len=1024) :: name_fetch = "code1Value"
+  character(len=1024) :: name_push = "code2Value"
 
   integer :: Nt = Nx * Ny * Nz
   integer :: i, j, k, n, iter
@@ -86,10 +86,10 @@ program main
   real(c_double) :: local_x2, local_y2, local_z2
   real(c_double) :: local_x3, local_y3, local_z3
   real(c_double), dimension (:,:,:,:), allocatable :: pp, pf
-  real(c_double), dimension (:,:,:), allocatable :: pressure_push, pressure_fetch
+  real(c_double), dimension (:,:,:), allocatable :: value_push, value_fetch
 
   allocate (pp(Nx,Ny,Nz,3), pf(Nx,Ny,Nz,3))  
-  allocate (pressure_push(Nx,Ny,Nz), pressure_fetch(Nx,Ny,Nz))  
+  allocate (value_push(Nx,Ny,Nz), value_fetch(Nx,Ny,Nz))
 
   !Call mui_mpi_split_by_app_f() function to init MPI
   call mui_mpi_split_by_app_f(MUI_COMM_WORLD)
@@ -134,7 +134,7 @@ program main
           pp(i,j,k,1) = x
           pp(i,j,k,2) = y
           pp(i,j,k,3) = z
-          pressure_push(i,j,k) = 97.7777
+          value_push(i,j,k) = 97.7777
        end do
     end do
   end do
@@ -149,7 +149,7 @@ program main
           pf(i,j,k,1) = x
           pf(i,j,k,2) = y
           pf(i,j,k,3) = z
-          pressure_fetch(i,j,k) = 11.11
+          value_fetch(i,j,k) = 11.11
        end do
     end do
   end do
@@ -171,7 +171,7 @@ program main
 		  do j = 1, Ny
 			 do k = 1, Nz
 				call mui_push_3d_f(uniface_3d_f, trim(name_push)//c_null_char, pp(i,j,k,1), pp(i,j,k,2), &
-				pp(i,j,k,3), pressure_push(i,j,k))
+				pp(i,j,k,3), value_push(i,j,k))
 			 end do
 		  end do
 		end do
@@ -186,7 +186,7 @@ program main
 				call mui_fetch_pseudo_n2_linear_exact_3d_pair_f(uniface_3d_f, &
 											   trim(name_fetch)//c_null_char, pf(i,j,k,1), pf(i,j,k,2), &
 												pf(i,j,k,3), real(n, c_double), real(iter, c_double), &
-												spatial_sampler_pseudo_n2_linear_3d_f, temporal_sampler_exact_3d_f,pressure_fetch(i,j,k))
+												spatial_sampler_pseudo_n2_linear_3d_f, temporal_sampler_exact_3d_f,value_fetch(i,j,k))
 			 end do
 		  end do
 		end do
@@ -199,7 +199,7 @@ program main
 		do i = 1, Nx
 		  do j = 1, Ny
 			 do k = 1, Nz
-                print *, "{", trim(appname),"}: ", pressure_fetch(i,j,k)
+                print *, "{", trim(appname),"}: ", value_fetch(i,j,k)
 			 end do
 		  end do
 		end do
@@ -215,6 +215,6 @@ program main
   !Destroy created MUI interfaces note: calls MPI_Finalize(), so need to do last
   call mui_destroy_uniface_3d_f(uniface_3d_f)
   ! Deallocate arrays
-  deallocate (pp, pf, pressure_push, pressure_fetch) 
+  deallocate (pp, pf, value_push, value_fetch)
 
 end program main
