@@ -37,6 +37,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *	
 ******************************************************************************/	
 
+/**
+ * @file 3D-pseudo-diffusion-fine.cpp
+ * @author W. Liu
+ * @date 01 November 2019
+ * @brief Fine (left and righr) domains of the 3D pseudo diffusion case
+ *
+ */
+
 #include <math.h>
 #include <string>
 #include <iostream>
@@ -90,7 +98,6 @@ int main(int argc, char ** argv) {
 
   /// Define parameters of the RBF sampler
   /// Define the search radius of the RBF sampler
-  /// The search radius should not set to a very large value so that to ensure a good convergence
   double rSampler   = 1.0;
   int basisFunc     = 1;
   bool conservative = true;
