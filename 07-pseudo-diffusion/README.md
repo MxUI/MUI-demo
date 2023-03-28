@@ -3,11 +3,11 @@ This demo of the MUI Multiscale Universal Interface is a 3D scalar field pseudo 
 
 | Sketch of this demo |
 |:------------------------------------------------------------------------------------------------------------------:|
-| <img src='Sketch.jpg' width='1451px'/>                                                                           |
+| <img src='Resources/Sketch.jpg' width='1451px'/>                                                                           |
 
 | Result at time-step = 200 |
 |:------------------------------------------------------------------------------------------------------------------:|
-|<img src='Result.jpg' width='1316px'/>|
+|<img src='Resources/Result.jpg' width='1316px'/>|
 
 This demo shows how to:
  1. Use the spatial sampler of Radial Basis Function;
@@ -16,9 +16,8 @@ This demo shows how to:
 This demo contains:
  1. 3D_pseudo_diffusion_fine.cpp & 3D_pseudo_diffusion_coarse.cpp: coupling domains; 
  2. demo7_config.h: configure file of the MUI uniface;
- 3. 3D_pseudo_diffusion_standalone.cpp: domain that runs standalone;
- 4. CMakeLists.txt: CMake file;
- 5. README.md
+ 3. CMakeLists.txt: CMake file;
+ 4. README.md
 
 ## Licensing
 
@@ -26,34 +25,24 @@ The source code is dual-licensed under both GPL v3 and Apache v2.
 
 ## Usage
 
-To run the examples you need a `mpic++` wrapper with C++11 enabled backend and `Eigen3` installed.
+To run the examples you need a `mpic++` wrapper with C++11 enabled backend.
 
 To run the demo:
 
 ```bash
-export CMAKE_INCLUDE_PATH=/path/to/MUI/
-cmake .
-
-make > make.log 2>&1
-
-mpirun -np 1 ./3D_pseudo_diffusion_fine :\
-       -np 1 ./3D_pseudo_diffusion_coarse >\
-		parallel.log 2>&1
-        
-./3D_pseudo_diffusion_standalone
+bash run_case.sh
 ```
-
-To visualize the results:
-
-Open `paraview` and read .csv files from the results folder.
-
-Use `TableToPoints` filter to generate points and use `Delaunay3D` filter to generate 3D volume.
-
-The `Slice` filter can be used to generate slice of the domains and `contour` filter can be used to illustrate the scalar field contours.
+`paraview` will open automatically after running to visualise the results.
 
 The integration of the scalar field:
 
 The instantaneous integration of the scalar field of each boundary faces that perpendicular to the x-axis direction is in faceIntegrationD1_D3.txt and faceIntegrationD2.txt of the results folder.  
+
+To clean the demo directory:
+
+```bash
+bash clean_case.sh
+```
 
 ## Contact
 
