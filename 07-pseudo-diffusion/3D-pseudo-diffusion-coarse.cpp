@@ -37,6 +37,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.      *	
 ******************************************************************************/	
 
+/**
+ * @file 3D-pseudo-diffusion-coarse.cpp
+ * @author W. Liu
+ * @date 01 November 2019
+ * @brief Coarse (middle) domain of the 3D pseudo diffusion case
+ *
+ */
+
 #include <math.h>
 #include <string>
 #include <iostream>
