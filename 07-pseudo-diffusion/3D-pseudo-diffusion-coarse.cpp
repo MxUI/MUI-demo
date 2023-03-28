@@ -94,7 +94,6 @@ int main(int argc, char **argv) {
 
   /// Define parameters of the RBF sampler
   /// Define the search radius of the RBF sampler
-  /// The search radius should not set to a very large value so that to ensure a good convergence
   double rSampler   = 0.8;
   int basisFunc     = 1;
   bool conservative = true;
