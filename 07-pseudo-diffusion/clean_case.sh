@@ -11,3 +11,7 @@ rm -f make.log
 rm -f output.log
 rm -f core.*
 rm -rf build
+rm -rf coupling_results*
+rm -rf rbfCoarseMatrix*
+rm -rf rbfFineMatrix*
+

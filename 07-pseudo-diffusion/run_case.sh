@@ -20,8 +20,8 @@ make 2>&1 | tee make.log && cd ..
 
 START=$SECONDS
 
-mpirun -np 1 3D-pseudo-diffusion-fine : \
-       -np 1 3D-pseudo-diffusion-coarse 2>&1 | tee output.log
+mpirun -np 2 3D-pseudo-diffusion-coarse : \
+       -np 2 3D-pseudo-diffusion-fine 2>&1 | tee output.log
 
 DURATION=$(( SECONDS - START ))
 
@@ -37,3 +37,5 @@ elif (( $DURATION > 60 )) ; then
 else
     echo "Completed in $DURATION seconds"
 fi
+
+paraview Resources/view.pvsm
