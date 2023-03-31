@@ -66,6 +66,11 @@ int main(int argc, char ** argv) {
   MPI_Comm_rank( world, &rank );
   MPI_Comm_size( world, &size );
 
+  if (size > 2) {
+	  std::cout << "MPI Size larger than 2 does not supported yet." << std::endl;
+	          exit(EXIT_FAILURE);
+  }
+
   /// Create results folder
   std::string makedirCRString = "coupling_results" + std::to_string(rank);
   mkdir(makedirCRString.c_str(), 0777);
@@ -120,25 +125,6 @@ int main(int argc, char ** argv) {
   /// Setup output interval
   constexpr static int    outputInterval  = 1;
 
-  /// Geometry info
-  double  lx0  = 1.0; /// length (x-axis direction) of the left part geometry
-  double  ly0  = 1.0; /// length (y-axis direction) of the left part geometry
-  double  lz0pr= 1.0 / static_cast<double>(size); /// length (z-axis direction) per MPI rank of the left part geometry
-  double  lz0  = 1.0; /// length (z-axis direction) of the left part geometry
-  double  x0   = 0.0;  /// origin coordinate (x-axis direction) of the left part geometry
-  double  y0   = 0.0;  /// origin coordinate (y-axis direction) of the left part geometry
-  double  z0pr = 0.0 + (lz0pr * static_cast<double>(rank) );  /// origin coordinate (z-axis direction) per MPI rank of the left part geometry
-  double  z0   = 0.0;  /// origin coordinate (z-axis direction) of the left part geometry
-
-  double  lx1  = 1.0; /// length (x-axis direction) of the right part geometry
-  double  ly1  = 1.0; /// length (y-axis direction) of the right part geometry
-  double  lz1pr= 1.0 / static_cast<double>(size); /// length (z-axis direction) per MPI rank of the right part geometry
-  double  lz1  = 1.0; /// length (z-axis direction) of the right part geometry
-  double  x1   = 2.0;  /// origin coordinate (x-axis direction) of the right part geometry
-  double  y1   = 0.0;  /// origin coordinate (y-axis direction) of the right part geometry
-  double  z1pr = 0.0 + (lz1pr * static_cast<double>(rank) );  /// origin coordinate (z-axis direction) per MPI rank of the right part geometry
-  double  z1   = 0.0;  /// origin coordinate (z-axis direction) of the right part geometry
-
   /// Domain discretization
   constexpr static int Ntx = 18;         /// number of grid points in x axis per part
   constexpr static int Nty = 18;         /// number of grid points in y axis per part
@@ -156,6 +142,84 @@ int main(int argc, char ** argv) {
 
   int Nt = 2* Nx * Ny * Nz; /// total number of points per MPI rank
 
+  /// Geometry info
+  double  lx0  = 1.0; /// length (x-axis direction) of the left part geometry
+  double  ly0  = 1.0; /// length (y-axis direction) of the left part geometry
+  double lz0pr;
+  if(size == 2) {
+	  if((Ntz%2)==0) {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  double lpz_half = lpz/2.0;
+		  lz0pr = (1.0 / static_cast<double>(size))-lpz_half;  /// length (z-axis direction) per MPI rank of the left part geometry
+	  } else {
+		  if(rank == 0){
+			  lz0pr = 1.0 / static_cast<double>(size);  /// length (z-axis direction) per MPI rank of the left part geometry
+		  } else {
+			  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+			  lz0pr = (1.0 / static_cast<double>(size))-lpz;  /// length (z-axis direction) per MPI rank of the left part geometry
+		  }
+
+	  }
+  } else if (size == 1) {
+	  lz0pr = 1.0;
+  }
+
+  double  lz0  = 1.0; /// length (z-axis direction) of the left part geometry
+  double  x0   = 0.0;  /// origin coordinate (x-axis direction) of the left part geometry
+  double  y0   = 0.0;  /// origin coordinate (y-axis direction) of the left part geometry
+  double z0pr;
+  if(rank == 0) {
+	  z0pr = 0.0;
+  } else if(rank == 1){
+	  if((Ntz%2)==0) {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  double lpz_half = lpz/2.0;
+		  z0pr = (1.0 / static_cast<double>(size))+lpz_half; /// origin coordinate (z-axis direction) per MPI rank of left part of the geometry
+	  } else {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  z0pr = (1.0 / static_cast<double>(size))+lpz; /// origin coordinate (z-axis direction) per MPI rank of left part of the geometry
+	  }
+  }
+  double  z0   = 0.0;  /// origin coordinate (z-axis direction) of the left part geometry
+
+  double  lx1  = 1.0; /// length (x-axis direction) of the right part geometry
+  double  ly1  = 1.0; /// length (y-axis direction) of the right part geometry
+  double lz1pr;
+  if(size == 2) {
+	  if((Ntz%2)==0) {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  double lpz_half = lpz/2.0;
+		  lz1pr = (1.0 / static_cast<double>(size))-lpz_half;  /// length (z-axis direction) per MPI rank of the right part geometry
+	  } else {
+		  if(rank == 0){
+			  lz1pr = 1.0 / static_cast<double>(size);  /// length (z-axis direction) per MPI rank of the right part geometry
+		  } else {
+			  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+			  lz1pr = (1.0 / static_cast<double>(size))-lpz;  /// length (z-axis direction) per MPI rank of the right part geometry
+		  }
+
+	  }
+  } else if (size == 1) {
+	  lz1pr = 1.0;
+  }
+  double  lz1  = 1.0; /// length (z-axis direction) of the right part geometry
+  double  x1   = 2.0;  /// origin coordinate (x-axis direction) of the right part geometry
+  double  y1   = 0.0;  /// origin coordinate (y-axis direction) of the right part geometry
+  double z1pr;
+  if(rank == 0) {
+	  z1pr = 0.0;
+  } else if(rank == 1){
+	  if((Ntz%2)==0) {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  double lpz_half = lpz/2.0;
+		  z1pr = (1.0 / static_cast<double>(size))+lpz_half; /// origin coordinate (z-axis direction) per MPI rank of the right part geometry
+	  } else {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  z1pr = (1.0 / static_cast<double>(size))+lpz; /// origin coordinate (z-axis direction) per MPI rank of the right part geometry
+	  }
+  }
+  double  z1   = 0.0;  /// origin coordinate (z-axis direction) of the right part geometry
+
   /// Declare points
   double points0[Nx][Ny][Nz][3], points1[Nx][Ny][Nz][3];
 
@@ -165,21 +229,11 @@ int main(int argc, char ** argv) {
       for (int i = 0; i < Nx; ++i) {
         points0[i][j][k][0] = x0 + (lx0 / (Nx - 1)) * i;
         points0[i][j][k][1] = y0 + (ly0 / (Ny - 1)) * j;
-
-		if(rank==0) {
-			points0[i][j][k][2] = z0pr + (lz0pr / (Nz - 1)) * k;
-		} else {
-			points0[i][j][k][2] = z0pr + (lz0pr / (Nz)) * (k+1);
-		}
+        points0[i][j][k][2] = z0pr + (lz0pr / (Nz - 1)) * k;
 
         points1[i][j][k][0] = x1 + (lx1 / (Nx - 1)) * i;
         points1[i][j][k][1] = y1 + (ly1 / (Ny - 1)) * j;
-
-		if(rank==0) {
-			points1[i][j][k][2] = z1pr + (lz1pr / (Nz - 1)) * k;
-		} else {
-			points1[i][j][k][2] = z1pr + (lz1pr / (Nz)) * (k+1);
-		}
+        points1[i][j][k][2] = z1pr + (lz1pr / (Nz - 1)) * k;
 
       }
     }
@@ -239,9 +293,7 @@ int main(int argc, char ** argv) {
 
   /// Define and announce MUI send/receive span
   mui::geometry::box<mui::demo7_config> send_region( {y0, z0pr}, {(y0+ly0), (z0pr+lz0pr)} );
-  mui::geometry::box<mui::demo7_config> recv_region( {y1, z1pr}, {(y1+ly1), (z1pr+lz1pr)} );
   ifs[0]->announce_send_span( 0, steps, send_region );
-  ifs[1]->announce_recv_span( 0, steps, recv_region );
 
 	/// Define spatial and temporal samplers
   mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler, point2dvec,
