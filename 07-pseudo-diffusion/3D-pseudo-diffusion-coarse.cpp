@@ -104,7 +104,6 @@ int main(int argc, char **argv) {
   bool conservative = true;
   double cutoff     = 1e-9;
   bool smoothFunc   = false;
-  bool readMatrix  = false;
   bool writeMatrix  = true;
   double cgSolveTol	= 1e-6;
   int cgMaxIter     = 500;
