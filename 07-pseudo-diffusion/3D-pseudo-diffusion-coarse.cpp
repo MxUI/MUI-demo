@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
   bool writeMatrix  = true;
   double cgSolveTol	= 1e-6;
   int cgMaxIter     = 500;
-  int preconditioner= 1;
+  int preconditioner= 0;
   int pouSize    	= 50;
   std::string fileAddress(makedirMString);
 
