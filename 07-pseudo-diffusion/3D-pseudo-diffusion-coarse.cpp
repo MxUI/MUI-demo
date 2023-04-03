@@ -66,6 +66,11 @@ int main(int argc, char **argv) {
   MPI_Comm_rank(world, &rank);
   MPI_Comm_size(world, &size);
 
+  if (size > 2) {
+	  std::cout << "MPI Size larger than 2 does not supported yet." << std::endl;
+	          exit(EXIT_FAILURE);
+  }
+
   /// Create rbf matrix folder
   std::string makedirMString = "rbfCoarseMatrix" + std::to_string(rank);
   mkdir(makedirMString.c_str(), 0777);
@@ -99,7 +104,6 @@ int main(int argc, char **argv) {
   bool conservative = true;
   double cutoff     = 1e-9;
   bool smoothFunc   = false;
-  bool readMatrix  = false;
   bool writeMatrix  = true;
   double cgSolveTol	= 1e-6;
   int cgMaxIter     = 500;
@@ -115,17 +119,6 @@ int main(int argc, char **argv) {
 
   /// Setup output interval
   constexpr static int outputInterval = 1;
-
-  /// Geometry info
-  double lx = 1.0; /// length (x-axis direction) of the geometry
-  double ly = 1.0; /// length (y-axis direction) of the geometry
-  double lzpr = 1.0 / static_cast<double>(size); /// length (z-axis direction) per MPI rank of the geometry per MPI rank
-  double lz = 1.0; /// length (z-axis direction) of the geometry per MPI rank
-  double x0 = 1.0; /// origin coordinate (x-axis direction) of the geometry
-  double y0 = 0.0; /// origin coordinate (y-axis direction) of the geometry
-  double z0pr = 0.0 + (lzpr * static_cast<double>(rank) ); /// origin coordinate (z-axis direction) per MPI rank of the geometry
-  double z0 = 0.0; /// origin coordinate (z-axis direction) of the geometry
-
 
   /// Domain discretization
   constexpr static int Ntx = 9;          /// total number of grid points in x axis
@@ -144,6 +137,43 @@ int main(int argc, char **argv) {
 
   int Nt = Nx * Ny * Nz; /// total number of points per MPI rank
 
+  /// Geometry info
+  double lx = 1.0; /// length (x-axis direction) of the geometry
+  double ly = 1.0; /// length (y-axis direction) of the geometry
+  double lzpr;
+  if(size == 2) {
+	  if((Ntz%2)==0) {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  double lpz_half = lpz/2.0;
+		  lzpr = (1.0 / static_cast<double>(size))-lpz_half; /// length (z-axis direction) per MPI rank of the geometry per MPI rank
+	  } else {
+		  if(rank == 0){
+			  lzpr = 1.0 / static_cast<double>(size); /// length (z-axis direction) per MPI rank of the geometry per MPI rank
+		  } else {
+			  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+			  lzpr = (1.0 / static_cast<double>(size))-lpz; /// length (z-axis direction) per MPI rank of the geometry per MPI rank
+		  }
+
+	  }
+  } else if (size == 1) {
+	  lzpr = 1.0;
+  }
+  double x0 = 1.0; /// origin coordinate (x-axis direction) of the geometry
+  double y0 = 0.0; /// origin coordinate (y-axis direction) of the geometry
+  double z0pr;
+  if(rank == 0) {
+	  z0pr = 0.0;
+  } else if(rank == 1){
+	  if((Ntz%2)==0) {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  double lpz_half = lpz/2.0;
+		  z0pr = (1.0 / static_cast<double>(size))+lpz_half; /// origin coordinate (z-axis direction) per MPI rank of the geometry
+	  } else {
+		  double lpz = 1.0/(static_cast<double>(Ntz)-1.0);
+		  z0pr = (1.0 / static_cast<double>(size))+lpz; /// origin coordinate (z-axis direction) per MPI rank of the geometry
+	  }
+  }
+
   /// Declare points
   double points[Nx][Ny][Nz][3];
 
@@ -153,11 +183,7 @@ int main(int argc, char **argv) {
       for (int i = 0; i < Nx; ++i) {
         points[i][j][k][0] = x0 + (lx / (Nx - 1)) * i;
         points[i][j][k][1] = y0 + (ly / (Ny - 1)) * j;
-		if(rank==0) {
-			points[i][j][k][2] = z0pr + (lzpr / (Nz - 1)) * k;
-		} else {
-			points[i][j][k][2] = z0pr + (lzpr / (Nz)) * (k+1);
-		}
+        points[i][j][k][2] = z0pr + (lzpr / (Nz - 1)) * k;
       }
     }
   }
@@ -196,10 +222,7 @@ int main(int argc, char **argv) {
   /// Define and announce MUI send/receive span
   mui::geometry::box<mui::demo7_config> send_region( { y0, z0pr },
       { (y0 + ly), (z0pr + lzpr) });
-  mui::geometry::box<mui::demo7_config> recv_region( { y0, z0pr },
-      { (y0 + ly), (z0pr + lzpr) });
   ifs[1]->announce_send_span(0, steps, send_region);
-  ifs[0]->announce_recv_span(0, steps, recv_region);
 
   /// Define spatial and temporal samplers
   mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler, point2dvec,
