@@ -64,23 +64,20 @@ program main
   integer, parameter :: N = 11
   double precision :: u1(N), u2(N), k = 0.515, H = 1.0, rSearch = 1.0, tolerance = 8.0e-1
   type(c_ptr), target :: MUI_COMM_WORLD=c_null_ptr
-  integer :: mui_ranks, mui_size, ierr, status, i, j, countemp, iter, pair_count
+  integer :: mui_ranks, mui_size, ierr, status, i, j, iter, pair_count
   type(c_ptr), target :: uniface_1d_f=c_null_ptr
   type(c_ptr), target :: mui_sampler_pseudo_nearest_neighbor_1d_f=c_null_ptr
   type(c_ptr), target :: mui_temporal_sampler_exact_1d_f=c_null_ptr
   type(c_ptr), target :: mui_algorithm_fixed_relaxation_1d_f=c_null_ptr
 
   real(c_double), dimension (:), allocatable :: pp, value_init, u, v, tempValue
-  real(c_double) :: value_fetch
   character(len=1024) :: appname = "right"
   character(len=1024) :: uriheader = "mpi://"
   character(len=1024) :: uridomain = "/ifs"
   character(len=1024) :: name_fetch = "u"
   character(len=1024) :: name_push = "u0"
   character(len=1024) :: fileAddress = "results_right"
-  character(len=1024) :: line, fileName, fileWriteName, fileWriteName2, uri1d, makedirMString
-  character(len=10), dimension(10) :: values
-  character(len=100), dimension(100, 10) :: content
+  character(len=1024) :: fileWriteName, fileWriteName2, uri1d, makedirMString
   logical :: fileExists
 
   allocate (pp(N), value_init(N), u(N), v(N), tempValue(N))
@@ -100,143 +97,103 @@ program main
   call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
   print *, "{", trim(appname),"}: COMM_SIZE: ", mui_size, "COMM_RANK: ", mui_ranks
 
- ! Check if the file exists
-  fileName = "Resources/right_FR.csv"
-  inquire(file=fileName, exist=fileExists)
-  if (.not. fileExists) then
-    print *, "Error: file ", fileName, " does not exist."
-    stop
-  endif
-
- ! Open the file
-  open(unit=11, file=fileName, status='old')
-
-  ! Read each line and parse the comma-separated values
-  i = 0
-  do while (i < 100 .and. ierr == 0)
-    read(11, '(a)', iostat=ierr) line
-    print *, "FORTRAN line: ", line
-    if (ierr /= 0) exit ! End of file or read error
-    countemp = 0
-    do j = 1, LEN_TRIM(line)
-      if (line(j:j) == ',') then
-        countemp = countemp + 1
-        if (countemp <= 10) then
-          content(i+1, countemp) = values(countemp)
-          values = ''
-        end if
-      else
-        values = values // line(j:j)
-!        print *, "FORTRAN values: ", values
-      end if
-    end do
-    i = i + 1
+  do i = 4, 10
+    u1(i) = 0.0
   end do
 
-! do i = 4, 10
-!    read(content(i-3, 2), *) u1(i)
-!  end do
+  ! MUI/MPI get comm size & rank
+  call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
+  call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
+  print *, "{", trim(appname),"}: COMM_SIZE: ", mui_size, "COMM_RANK: ", mui_ranks
 
+  ! Convert integer to string
+  write(makedirMString,'(a,i0)') "results_right", mui_ranks
+  ! Create directory
+  call system('mkdir -m 777 '//trim(makedirMString), ierr)
+
+  ! Check if directory was created successfully
+  if (ierr /= 0) then
+    print *, "Error creating directory"
+  else
+    print *, "Directory created successfully"
+  endif
+
+  ! Set push points & value
+  pair_count = 0
+  do i = 4, 10
+      pp(i) = i
+      value_init(i) = u1(i)
+      pair_count = pair_count + 1
+  end do
+
+  ! MUI define spatial and temporal samplers
+  call mui_create_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f, rSearch)
+  call mui_create_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f, tolerance)
+  call mui_create_algorithm_fixed_relaxation_1d_f(mui_algorithm_fixed_relaxation_1d_f, DBLE(0.01), pp, value_init, pair_count)
+
+  ! Create the file name
+  write(fileWriteName, "(a, i0, a)") "results_right", mui_ranks, "/solution-right_FR_0.csv"
+  ! Open the file for writing
+  open(unit=12, file=fileWriteName, action="write", status="replace")
+  ! Write the header row
+  write(12, "(a, a, a)") '"X"', ',','"u"'
+  ! Write the data rows
+  do i = 4, 10
+    write(12, "(f4.1, a, f4.2, a)")  i*H, ",", u(i), ","
+  end do
   ! Close the file
-  close(11)
+  close(12)
 
-!  ! MUI/MPI get comm size & rank
-!  call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
-!  call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
-!  print *, "{", trim(appname),"}: COMM_SIZE: ", mui_size, "COMM_RANK: ", mui_ranks
-!
-!  ! Convert integer to string
-!  write(makedirMString,'(a,i0)') "results_right", mui_ranks
-!  ! Create directory
-!  call system('mkdir -m 777 '//trim(makedirMString), ierr)
-!
-!  ! Check if directory was created successfully
-!  if (ierr /= 0) then
-!    print *, "Error creating directory"
-!  else
-!    print *, "Directory created successfully"
-!  endif
-!
-!  ! Set push points & value
-!  pair_count = 0
-!  do i = 4, 10
-!      pp(i) = i
-!      value_init(i) = u1(i)
-!      pair_count = pair_count + 1
-!  end do
-!
-!  ! MUI define spatial and temporal samplers
-!  call mui_create_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f, rSearch)
-!  call mui_create_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f, tolerance)
-!!  call mui_create_algorithm_fixed_relaxation_1d_f(algorithm_fixed_relaxation_1d_f, 0.01, pp, value_init, pair_count)
-!
-!  ! Create the file name
-!  write(fileWriteName, "(a, i0, a)") "results_right", mui_ranks, "/solution-right_FR_0.csv"
-!  ! Open the file for writing
-!  open(unit=12, file=fileWriteName, action="write", status="replace")
-!  ! Write the header row
-!  write(12, "(a, a)") """X""", """,""u"""
-!  ! Write the data rows
-!  do i = 4, 10
-!      write(12, "(f0.2, a, f0.2, a)") i*H, ",", u(i), ","
-!  end do
-!  ! Close the file
-!  close(12)
-!
-!  ! Begin time loops
-!  do iter = 1, 1000
-!
-!    write(*,*) "Right grid iteration ", iter
-!
-!    ! MUI fetch points
-!!    call mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d_f(uniface_1d_f, &
-!!                                   trim(name_fetch)//c_null_char, 4 * H, real(iter, c_double), &
-!!                                    spatial_sampler_pseudo_nearest_neighbor_1d_f,  &
-!!                                    temporal_sampler_exact_1d_f,algorithm_fixed_relaxation_1d_f, value_fetch)
-!    call mui_fetch_pseudo_nearest_neighbor_exact_1d_f(uniface_1d_f, &
-!                                   trim(name_fetch)//c_null_char, 4 * H, real(iter, c_double), &
-!                                    mui_sampler_pseudo_nearest_neighbor_1d_f,  &
-!                                    mui_temporal_sampler_exact_1d_f, value_fetch)
-!
-!    ! calculate 'interior' points
-!    do i = 5, 10
-!        v(i) = u(i) + k / ( H * H ) * ( u(i - 1) + u(i + 1) - 2 * u(i) )
-!    end do
-!
-!    ! calculate 'boundary' points
-!    v(N-1) = 0.0
-!    v(4) = u(4)
-!
-!    ! MUI push points
-!    call mui_push_1d_f(uniface_1d_f, trim(name_push)//c_null_char, 6 * H, u(6))
-!
-!    ! MUI commit
-!    call mui_commit_1d_f(uniface_1d_f, real(iter, c_double))
-!
-!    ! Swap u and v
-!    tempValue = u
-!    u = v
-!    v = tempValue
-!
-!    ! Output
-!    write(fileWriteName2, "(a, i0, a, i0, a)") "results_right", mui_ranks,"/solution-right_FR_0", iter,".csv"
-!    open(unit=13, file=fileWriteName2, action="write", access="append")
-!    ! Write the header row
-!    write(13, "(a, a)") """X""", """,""u"""
-!    do i = 4, 10
-!        write(13, "(2(f0.2,','))") i * H, u(i)
-!    end do
-!    close(unit=13)
-!
-!  ! End time loop
-!  end do
-!
-!  !Destroy created 3D MUI objects
-!  call mui_destroy_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f)
-!  call mui_destroy_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f)
-!  !Destroy created MUI interfaces note: calls MPI_Finalize(), so need to do last
-!  call mui_destroy_uniface_1d_f(uniface_1d_f)
-!  ! Deallocate arrays
-!  deallocate (pp, value_init)
+  ! Begin time loops
+  do iter = 1, 1000
+
+    write(*,*) "Right grid iteration ", iter
+
+    ! MUI fetch points
+    call mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d_f(uniface_1d_f, &
+                                   trim(name_fetch)//c_null_char, 4 * H, real(iter, c_double), &
+                                    mui_sampler_pseudo_nearest_neighbor_1d_f,  &
+                                    mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(4))
+
+    ! calculate 'interior' points
+    do i = 5, 10
+        v(i) = u(i) + k / ( H * H ) * ( u(i - 1) + u(i + 1) - 2 * u(i) )
+    end do
+
+    ! calculate 'boundary' points
+    v(N-1) = 0.0
+    v(4) = u(4)
+
+    ! MUI push points
+    call mui_push_1d_f(uniface_1d_f, trim(name_push)//c_null_char, 6 * H, u(6))
+
+    ! MUI commit
+    call mui_commit_1d_f(uniface_1d_f, real(iter, c_double))
+
+    ! Swap u and v
+    tempValue = u
+    u = v
+    v = tempValue
+
+    ! Output
+    write(fileWriteName2, "(a, i0, a, i0, a)") "results_right", mui_ranks,"/solution-right_FR_0", iter,".csv"
+    open(unit=13, file=fileWriteName2, action="write", access="append")
+    ! Write the header row
+    write(13, "(a, a, a)") '"X"', ',','"u"'
+    do i = 4, 10
+        write(13, "(f4.1, a, f4.2, a)")  i*H, ",", u(i), ","
+    end do
+    close(unit=13)
+
+  ! End time loop
+  end do
+
+  !Destroy created 3D MUI objects
+  call mui_destroy_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f)
+  call mui_destroy_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f)
+  !Destroy created MUI interfaces note: calls MPI_Finalize(), so need to do last
+  call mui_destroy_uniface_1d_f(uniface_1d_f)
+  ! Deallocate arrays
+  deallocate (pp, value_init)
 
 end program main

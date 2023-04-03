@@ -48,4 +48,4 @@ else
     echo "Completed in $DURATION seconds"
 fi
 
-#paraview Resources/view.pvsm
+paraview Resources/view.pvsm
