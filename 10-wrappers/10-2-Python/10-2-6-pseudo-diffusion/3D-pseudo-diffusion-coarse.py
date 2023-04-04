@@ -38,9 +38,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.      #
 ##############################################################################
 #
-# @file 3D_pseudo_diffusion_coarse.py
+# @file 3D-pseudo-diffusion-coarse.py
 # @author W. Liu
-# @date 21 November 2019
+# @date 04 April 2023
 # @brief Coarse (middle) domain of the 3D pseudo diffusion case
 #
 """
@@ -56,21 +56,24 @@ import os
 import mui4py
 
 # Common world claims 
-MPI_COMM_WORLD = mui4py.mpi_split_by_app()
+MUI_COMM_WORLD = mui4py.mpi_split_by_app()
 
 # Declare MPI ranks
-rank = MPI_COMM_WORLD.Get_rank()
+rank = MUI_COMM_WORLD.Get_rank()
+
+# Declare MPI size
+size = MUI_COMM_WORLD.Get_size()
 
 # Define MUI dimension
 dimensionMUI = 2
 
 # Define the name of push/fetch values
-name_push = "coarseField"
-name_fetch  = "fineField"
+name_pushA = "coarseFieldA"
+name_fetchA  = "fineFieldA"
 
 # Define MUI push/fetch data types
-data_types_push = {name_push: mui4py.FLOAT64}
-data_types_fetch = {name_fetch: mui4py.FLOAT64} 
+data_types_push = {name_pushA: mui4py.FLOAT64}
+data_types_fetch = {name_fetchA: mui4py.FLOAT64} 
 
 # MUI interface creation
 domain = "coarseDomain"
@@ -81,9 +84,6 @@ MUI_Interfaces["interface2D01"].set_data_types(data_types_fetch)
 MUI_Interfaces["interface2D02"].set_data_types(data_types_push)
 
 print("mpi4py.get_config(): ", mpi4py.get_config(), "\n")
-print("mui4py.get_compiler_config(): ", mui4py.get_compiler_config(), "\n")
-print("mui4py.get_compiler_version(): ", mui4py.get_compiler_version(), "\n")
-print("mui4py.get_mpi_version(): ", mui4py.get_mpi_version(), "\n")
 
 # Define the forget steps of MUI to reduce the memory
 forgetSteps = int(5)
@@ -91,18 +91,17 @@ forgetSteps = int(5)
 synchronised=False
 
 #Define parameters of the RBF sampler
-rSampler = 0.4                # Define the search radius of the RBF sampler (radius size should be balanced to try and maintain)
-baseFunc = 0                  # Specify RBF basis function 0-Gaussian; 1-WendlandC0; 2-WendlandC2; 3-WendlandC4; 4-WendlandC6
-conservative = false          # Enable conservative OR consistent RBF form
-polynomial = true             # Enable/disable polynomial terms during RBF matrix creation
-smoothFunc = false            # Enable/disable RBF smoothing function during matrix creation
-readMatrix = false            # Enable/disable reading the matrix in from file
-writeMatrix = true            # Enable/disable writing of the matrix (if not reading)
-rbfMatrixFolder = "rbfCoarse" # Output folder for the RBF matrix files
-cutOff = 1e-9                 # Cut-off value for Gaussian RBF basis function
-cgSolveTol = 1e-6;            # Eigen Conjugate Gradient solver tolerance
-cgMaxIter = -1;               # Eigen Conjugate Gradient solver maximum iterations (-1 = value determined by tolerance)
-pouSize = 50;                 # RBF Partition of Unity patch size
+rSampler = 0.8                                  # Define the search radius of the RBF sampler (radius size should be balanced to try and maintain)
+basisFunc = 1                                   # Specify RBF basis function 0-Gaussian; 1-WendlandC0; 2-WendlandC2; 3-WendlandC4; 4-WendlandC6
+conservative = True                             # Enable conservative OR consistent RBF form
+cutOff = 1e-9                                   # Cut-off value for Gaussian RBF basis function
+smoothFunc = False                              # Enable/disable RBF smoothing function during matrix creation
+writeMatrix = True                              # Enable/disable writing of the matrix (if not reading)
+cgSolveTol = 1e-6;                              # Conjugate Gradient solver tolerance
+cgMaxIter = 500;                                # Conjugate Gradient solver maximum iterations (-1 = value determined by tolerance)
+preconditioner = 1;                             # Preconditioner of Conjugate Gradient solver
+pouSize = 50;                                   # RBF Partition of Unity patch size
+rbfMatrixFolder = "rbfCoarseMatrix" + str(rank) # Output folder for the RBF matrix files
 
 # Create the RBF Matrix Folder includes all intermediate folders if don't exists
 if not os.path.exists(rbfMatrixFolder):
@@ -120,82 +119,120 @@ steps = int(200)
 # Setup output interval
 outputInterval  = int(1)
 
+# Domain discretization
+# total number of grid points in x axis
+Ntx = int(9)
+# total number of grid points in y axis
+Nty = int(9)
+# total number of grid points in z axis
+Ntz = int(9)
+
+# number of grid points in x axis per MPI rank
+Nx = Ntx
+# number of grid points in y axis per MPI rank
+Ny = Nty
+# number of grid points in z axis per MPI rank
+Nz = int(0)
+
+if (rank < (Ntz % size)):
+    Nz = int(Ntz/size + 1)
+else:
+    Nz = int(Ntz/size)
+
+# total number of points
+Npoints = Nx*Ny*Nz
+assert Npoints > 0
+
 # Geometry info
-# origin coordinate (x-axis direction) of the geometry
-x0 = 1.0
-# origin coordinate (y-axis direction) of the geometry
-y0 = 0.0
-# origin coordinate (z-axis direction) of the geometry
-z0 = 0.0
 # length (x-axis direction) of the geometry
 lx = 1.0
 # length (y-axis direction) of the geometry
 ly = 1.0
 # length (z-axis direction) of the geometry
-lz = 1.0
+lzpr = 0.0
 
-# Domain discretization
-# number of grid points in x axis
-Ni = int(9)
-# number of grid points in y axis
-Nj = int(9)
-# number of grid points in z axis
-Nk = int(9)
-# total number of points
-Npoints = Ni*Nj*Nk
+if(size == 2):
+    if((Ntz%2)==0):
+        lpz = 1.0/(float(Ntz)-1.0)
+        lpz_half = lpz/2.0
+        lzpr = (1.0 / float(size))-lpz_half
+    else:
+        if(rank == 0):
+            lzpr = 1.0 / float(size)
+        else:
+            lpz = 1.0/(float(Ntz)-1.0)
+            lzpr = (1.0 / float(size))-lpz
+elif (size == 1):
+    lzpr = 1.0
+
+# origin coordinate (x-axis direction) of the geometry
+x0 = 1.0
+# origin coordinate (y-axis direction) of the geometry
+y0 = 0.0
+# origin coordinate (z-axis direction) of the geometry
+z0pr = 0.0
+
+if(rank == 0):
+    z0pr = 0.0
+elif (rank == 1):
+    if((Ntz%2)==0):
+        lpz = 1.0/(float(Ntz)-1.0)
+        lpz_half = lpz/2.0
+        z0pr = (1.0 / float(size))+lpz_half
+    else:
+        lpz = 1.0/(float(Ntz)-1.0)
+        z0pr = (1.0 / float(size))+lpz
 
 # Tolerance of data points
-tolerance = (lx/(Ni-1))*0.5
+tolerance = (lx/(Nx-1))*0.5
 
 # Store point coordinates
 points = np.zeros((Npoints, 3))
 c_0 = 0
-for k in range(Nk):
-    for j in range(Nj):
-        for i in range(Ni):
-            points[c_0] = [(x0+(lx/(Ni-1))*i), (y0+(ly/(Nj-1))*j), (z0+(lz/(Nk-1))*k)]
+for k in range(Nz):
+    for j in range(Ny):
+        for i in range(Nx):
+            points[c_0] = [(x0+(lx/(Nx-1))*i), (y0+(ly/(Ny-1))*j), (z0pr+(lzpr/(Nz-1))*k)]
             c_0 += 1
 
 # Generate initial pseudo scalar field
-scalar_field = np.zeros(Npoints)
+scalar_field_A = np.zeros(Npoints)
 for i in range(Npoints):
-    scalar_field[i] = 0.0
+    scalar_field_A[i] = 0.0
 
 # Declare list to store mui::point2d
 point2dList = []
 
 # Store mui::point2d that located in the fetch interface
 c_0 = 0
-for k in range(Nk):
-    for j in range(Nj):
-        for i in range(Ni):
+for k in range(Nz):
+    for j in range(Ny):
+        for i in range(Nx):
             if ((points[c_0][0]-x0) <= tolerance):
                 point_fetch = MUI_Interfaces["interface2D01"].Point([points[c_0][1], points[c_0][2]])
                 point2dList.append(point_fetch)
             c_0 += 1
 
 # Define and announce MUI send/receive span
-send_span = mui4py.geometry.Box([y0, z0], [(y0+ly), (z0+lz)])
-recv_span = mui4py.geometry.Box([y0, z0], [(y0+ly), (z0+lz)])
-MUI_Interfaces["interface2D01"].announce_recv_span(0, (steps+1), recv_span, synchronised)
+send_span = mui4py.geometry.Box([y0, z0pr], [(y0+ly), (z0pr+lzpr)])
 MUI_Interfaces["interface2D02"].announce_send_span(0, (steps+1), send_span, synchronised)
 
 # Spatial/temporal samplers
-t_sampler = mui4py.ChronoSamplerExact()
-s_sampler = mui4py.SamplerRbf(rSampler, point2dList, baseFunc, conservative, polynomial, smoothFunc, readMatrix, writeMatrix, rbfMatrixFolder, cutOff, cgSolveTol, cgMaxIt, pouSize)
+t_sampler = mui4py.TemporalSamplerExact()
+s_sampler = mui4py.SamplerRbf(rSampler, point2dList, basisFunc, conservative, smoothFunc, writeMatrix, rbfMatrixFolder, cutOff, cgSolveTol, cgMaxIter, pouSize, preconditioner, MUI_COMM_WORLD)
 
 # Commit ZERO step
 MUI_Interfaces["interface2D02"].commit(0)
 
 # Output the initial pseudo scalar field
-outputFileName = "coupling_results/scalar_field_coarse_0.csv"
+outputFileName = "coupling_results" + str(rank) + "/scalar_field_coarse_0.csv"
 outputFile = open(outputFileName,"w+")
-outputFile.write("\"X\",\"Y\",\"Z\",\"scalar_field\"\n")
+outputFile.write("\"X\",\"Y\",\"Z\",\"scalar_field_A\"\n")
 c_0 = 0
-for k in range(Nk):
-    for j in range(Nj):
-        for i in range(Ni):
-            outputFile.write("%f,%f,%f,%f\n" % (points[c_0][0],points[c_0][1],points[c_0][2],scalar_field[c_0]))
+for k in range(Nz):
+    for j in range(Ny):
+        for i in range(Nx):
+            outputFile.write("%f,%f,%f,%f\n" % (points[c_0][0],points[c_0][1],points[c_0][2],scalar_field_A[c_0]))
             c_0 += 1
 outputFile.close() 
 
@@ -206,7 +243,7 @@ intFaceLD2 = 0.0
 intFaceRD2 = 0.0
 
 # Define output files for boundary integrations
-outputIntegrationName = "coupling_results/faceIntegrationD2.txt"
+outputIntegrationName = "coupling_results" + str(rank) + "/faceIntegrationD2.txt"
 outputIntegration = open(outputIntegrationName,"w+")
 outputIntegration.write("\"t\",\"intFaceLD2\",\"intFaceRD2\"\n")
 outputIntegration.close()
@@ -223,34 +260,34 @@ for t in range(1, (steps+1)):
 
     # Loop over points of Domain 2
     c_0 = 0
-    for k in range(Nk):
-        for j in range(Nj):
-            for i in range(Ni):
+    for k in range(Nz):
+        for j in range(Ny):
+            for i in range(Nx):
                 # Loop over left boundary points of Domain 2
                 if ((points[c_0][0]-x0) <= tolerance):
                     points_fetch = [points[c_0][1], points[c_0][2]]
                     # Fetch data from the other solver
-                    scalar_field[c_0] = MUI_Interfaces["interface2D01"].\
-                                                        fetch(name_fetch,
+                    scalar_field_A[c_0] = MUI_Interfaces["interface2D01"].\
+                                                        fetch(name_fetchA,
                                                         points_fetch,
                                                         t,
                                                         s_sampler,
                                                         t_sampler)
 
                     # Calculate the integration of left boundary points of Domain 2
-                    intFaceLD2 += scalar_field[c_0]
+                    intFaceLD2 += scalar_field_A[c_0]
                 else: # Loop over 'internal' points of Domain 2
 
                     #Calculate the diffusion of pseudo scalar field of Domain 2
-                    scalar_field[c_0] += dr*(scalar_field[c_0 - 1] - scalar_field[c_0])
+                    scalar_field_A[c_0] += dr*(scalar_field_A[c_0 - 1] - scalar_field_A[c_0])
 
                     # Loop over right boundary points of Domain 2
                     if (( (x0+lx) - points[c_0][0]) <= (tolerance)):
-                        points_push = [(y0+(ly/(Nj-1))*j), (z0+(lz/(Nk-1))*k)]
+                        points_push = [(y0+(ly/(Ny-1))*j), (z0pr+(lzpr/(Nz-1))*k)]
                         # push data to the other solver
-                        MUI_Interfaces["interface2D02"].push(name_push, points_push, scalar_field[c_0])
+                        MUI_Interfaces["interface2D02"].push(name_pushA, points_push, scalar_field_A[c_0])
                         # Calculate the integration of right boundary points of Domain 2
-                        intFaceRD2 += scalar_field[c_0]
+                        intFaceRD2 += scalar_field_A[c_0]
                 c_0 += 1
 
     # Commit 't' step of MUI
@@ -262,14 +299,14 @@ for t in range(1, (steps+1)):
 
     # Output the pseudo scalar field and the boundary integrations
     if ((t % outputInterval) == 0):
-        outputFileName = "coupling_results/scalar_field_coarse_" + str(t) + ".csv"
+        outputFileName = "coupling_results" + str(rank) + "/scalar_field_coarse_" + str(t) + ".csv"
         outputFile = open(outputFileName,"w+")
-        outputFile.write("\"X\",\"Y\",\"Z\",\"scalar_field\"\n")
+        outputFile.write("\"X\",\"Y\",\"Z\",\"scalar_field_A\"\n")
         c_0 = 0
-        for k in range(Nk):
-            for j in range(Nj):
-                for i in range(Ni):
-                    outputFile.write("%f,%f,%f,%f\n" % (points[c_0][0],points[c_0][1],points[c_0][2],scalar_field[c_0]))
+        for k in range(Nz):
+            for j in range(Ny):
+                for i in range(Nx):
+                    outputFile.write("%f,%f,%f,%f\n" % (points[c_0][0],points[c_0][1],points[c_0][2],scalar_field_A[c_0]))
                     c_0 += 1
 
         outputFile.close() 
