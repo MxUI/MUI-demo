@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Multiscale Universal Interface Code Coupling Library                       *
+* Multiscale Universal Interface Code Coupling Library Demo 10-0-2           *
 *                                                                            *
 * Copyright (C) 2023 W. Liu                                                  *
 *                                                                            *
