@@ -178,8 +178,10 @@ program main
                                             mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(42))
         end if
 
-!        write(*,*) "Right under relaxation factor at t= ", t, " iter= ", iter, " is ", aitken_get_under_relaxation_factor(mui_algorithm_fixed_relaxation_1d_f,t,iter)
-!        write(*,*) "Right residual L2 Norm at t= ", t, " iter= ", iter, " is ", aitken_get_residual_L2_Norm(mui_algorithm_fixed_relaxation_1d_f,t,iter)
+        write(*,*) "Right under relaxation factor at t= ", t, " iter= ", iter, " is ", &
+            mui_aitken_get_under_relaxation_factor_1d_pair_f(mui_algorithm_fixed_relaxation_1d_f,t,iter)
+        write(*,*) "Right residual L2 Norm at t= ", t, " iter= ", iter, " is ", &
+            mui_aitken_get_residual_L2_Norm_1d_pair_f(mui_algorithm_fixed_relaxation_1d_f,t,iter)
 
         ! calculate 'interior' points
         do i = 50, 100, 10
