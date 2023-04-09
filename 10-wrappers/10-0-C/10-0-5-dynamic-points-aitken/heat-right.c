@@ -84,11 +84,11 @@ int main(int argc, char **argv) {
     double value_init[N];
 
     // Open the file in read mode
-    FILE* fp = fopen("Resources/right_FR.csv", "r");
+    FILE* fp = fopen("Resources/right_AITKEN.csv", "r");
 
     // Check if the file was opened successfully
     if (fp == NULL) {
-        printf("right_FR.csv missing.\n");
+        printf("right_AITKEN.csv missing.\n");
         return 1;
     }
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
         i++;
     }
 
-    for ( int i = 40; i <  110; i+=10 ) u1[i] = atof(content[i*0.1-3][1]);
+    for ( int i = 40; i <  110; i+=10 ) u1[i] = atof(content[i/10-3][1]);
 
     // Close the file
     fclose(fp);
@@ -139,6 +139,10 @@ int main(int argc, char **argv) {
     char fileAddress[32];
     strcpy(fileAddress, makedirMString);
 
+    char makedirMIterString[32];
+    sprintf(makedirMIterString, "results_iteration_right%d", mui_ranks);
+    mkdir(makedirMIterString, 0777);
+
     int pair_count = 0;
     for ( int i = 40; i <  110; i+=10 ) {
         points[i].point_1 = i;
@@ -149,7 +153,7 @@ int main(int argc, char **argv) {
     // Create spatial and temporal samplers for fetch operation
     mui_sampler_pseudo_nearest_neighbor_1d *spatial_sampler1d = mui_create_sampler_pseudo_nearest_neighbor_1d(rSearch);
     mui_temporal_sampler_exact_1d *temporal_sampler1d = mui_create_temporal_sampler_exact_1d(1.0);
-    mui_algorithm_aitken_1d *algorithm1d = mui_create_algorithm_aitken_1d(0.01, points, value_init, pair_count);
+    mui_algorithm_aitken_1d *algorithm1d = mui_create_algorithm_aitken_1d(0.1, 1.0, MUI_COMM_WORLD, points, value_init, pair_count, 0.0);
 
     // Output
     char fileName[100];
@@ -176,15 +180,12 @@ int main(int argc, char **argv) {
 
             // MUI fetch points
             mui_point_1d point_fetch={40 * H};
-            u[40] = mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d(uniface1d, fetch_name, point_fetch, iter, spatial_sampler1d, temporal_sampler1d, algorithm1d);
+            u[40] = mui_fetch_pseudo_nearest_neighbor_exact_aitken_1d_pair(uniface1d, fetch_name, point_fetch, t, iter, spatial_sampler1d, temporal_sampler1d, algorithm1d);
 
 			if ((t>=4) && (t<6)) {
 				mui_point_1d point_fetch_dynamic={42 * H};
-	            u[42] = mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d(uniface1d, fetch_name, point_fetch_dynamic, iter, spatial_sampler1d, temporal_sampler1d, algorithm1d);
+	            u[42] = mui_fetch_pseudo_nearest_neighbor_exact_aitken_1d_pair(uniface1d, fetch_name, point_fetch_dynamic, t, iter, spatial_sampler1d, temporal_sampler1d, algorithm1d);
 			}
-
-			printf( "Right under relaxation factor at t= %d iter= %d is %f\n", t, iter, mui_aitken_get_under_relaxation_factor_1d_pair(algorithm1d,t,iter));
-			printf( "Right residual L2 Norm at t= %d iter= %d is %f\n", t, iter, mui_aitken_get_residual_L2_Norm_1d_pair(algorithm1d,t,iter));
 
             // calculate 'interior' points
             for ( int i = 50; i <  110; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
@@ -202,7 +203,7 @@ int main(int argc, char **argv) {
             mui_push_1d(uniface1d, push_name, point_push, u[60]);
 
             // MUI commit
-            mui_commit_1d(uniface1d, iter);
+            mui_commit_1d_pair(uniface1d, t, iter);
 
             double* temp = u;
             u = v;
