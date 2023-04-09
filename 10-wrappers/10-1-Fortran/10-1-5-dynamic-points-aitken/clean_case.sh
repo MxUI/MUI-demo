@@ -12,4 +12,6 @@ rm -f output.log
 rm -f core.*
 rm -rf results_left*
 rm -rf results_right*
+rm -rf results_iteration_left*
+rm -rf results_iteration_right*
 rm -rf build

@@ -71,6 +71,7 @@ program main
   type(c_ptr), target :: mui_algorithm_aitken_1d_f=c_null_ptr
 
   real(c_double), dimension (:), allocatable :: pp, value_init, u, v, tempValue
+  real(c_double) :: underRelax,resL2Norm
   character(len=1024) :: appname = "right"
   character(len=1024) :: uriheader = "mpi://"
   character(len=1024) :: uridomain = "/ifs"
@@ -78,7 +79,7 @@ program main
   character(len=1024) :: name_push = "u0"
   character(len=1024) :: fileAddress = "results_right"
   character(len=1024) :: fileWriteName, fileWriteName2, fileWriteName3, fileWriteName4
-  character(len=1024) :: uri1d, makedirMString
+  character(len=1024) :: uri1d, makedirMString, makedirMIterString
   logical :: fileExists
 
   allocate (pp(N), value_init(N), u(N), v(N), tempValue(N))
@@ -111,6 +112,9 @@ program main
   write(makedirMString,'(a,i0)') "results_right", mui_ranks
   ! Create directory
   call system('mkdir -m 777 '//trim(makedirMString), ierr)
+  write(makedirMIterString,'(a,i0)') "results_iteration_right", mui_ranks
+  ! Create directory
+  call system('mkdir -m 777 '//trim(makedirMIterString), ierr)
 
   ! Check if directory was created successfully
   if (ierr /= 0) then
@@ -130,7 +134,8 @@ program main
   ! MUI define spatial and temporal samplers
   call mui_create_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f, rSearch)
   call mui_create_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f, tolerance)
-  call mui_create_algorithm_aitken_1d_f(mui_algorithm_fixed_relaxation_1d_f, DBLE(0.01), pp, value_init, pair_count)
+  call mui_create_algorithm_aitken_1d_f(mui_algorithm_aitken_1d_f, DBLE(0.01), DBLE(1.0), MUI_COMM_WORLD, &
+        pp, value_init, pair_count, DBLE(0.0))
 
   ! Create the file name
   write(fileWriteName, "(a, i0, a)") "results_right", mui_ranks, "/solution-right_AITKEN_0.csv"
@@ -140,7 +145,7 @@ program main
   write(12, "(a, a, a)") '"X"', ',','"u"'
   ! Write the data rows
   do i = 40, 100, 10
-    write(12, "(f4.1, a, f4.2, a)")  i*H, ",", u(i), ","
+    write(12, "(f10.5, a, f10.5, a)")  i*H, ",", u(i), ","
   end do
   ! Close the file
   close(12)
@@ -153,7 +158,7 @@ program main
   write(14, "(a, a, a)") '"X"', ',','"u"'
   ! Write the data rows
   do i = 40, 100, 10
-    write(14, "(f4.1, a, f4.2, a)")  i*H, ",", u(i), ","
+    write(14, "(f10.5, a, f10.5, a)")  i*H, ",", u(i), ","
   end do
   ! Close the file
   close(14)
@@ -166,22 +171,17 @@ program main
         write(*,*) "Right grid time ", t, " iteration ", iter
 
         ! MUI fetch points
-        call mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d_pair_f(uniface_1d_f, &
+        call mui_fetch_pseudo_nearest_neighbor_exact_aitken_1d_pair_f(uniface_1d_f, &
                                        trim(name_fetch)//c_null_char, 40 * H, real(t, c_double), real(iter, c_double), &
                                         mui_sampler_pseudo_nearest_neighbor_1d_f,  &
-                                        mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(40))
+                                        mui_temporal_sampler_exact_1d_f,mui_algorithm_aitken_1d_f, u(40))
 
         if ((t .ge. 4) .and. (t .lt. 6)) then
-            call mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d_pair_f(uniface_1d_f, &
+            call mui_fetch_pseudo_nearest_neighbor_exact_aitken_1d_pair_f(uniface_1d_f, &
                                            trim(name_fetch)//c_null_char, 42 * H, real(t, c_double), real(iter, c_double), &
                                             mui_sampler_pseudo_nearest_neighbor_1d_f,  &
-                                            mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(42))
+                                            mui_temporal_sampler_exact_1d_f,mui_algorithm_aitken_1d_f, u(42))
         end if
-
-        write(*,*) "Right under relaxation factor at t= ", t, " iter= ", iter, " is ", &
-            mui_aitken_get_under_relaxation_factor_1d_pair_f(mui_algorithm_fixed_relaxation_1d_f,t,iter)
-        write(*,*) "Right residual L2 Norm at t= ", t, " iter= ", iter, " is ", &
-            mui_aitken_get_residual_L2_Norm_1d_pair_f(mui_algorithm_fixed_relaxation_1d_f,t,iter)
 
         ! calculate 'interior' points
         do i = 50, 100, 10
@@ -208,16 +208,17 @@ program main
         v = tempValue
 
         ! Output
-        write(fileWriteName2, "(a, i0, a, i0, a)") "results_iteration_right", mui_ranks,"/solution-right_AITKEN_", (((t-1)*100) + iter),".csv"
+        write(fileWriteName2, "(a, i0, a, i0, a)") "results_iteration_right", mui_ranks,"/solution-right_AITKEN_", &
+            (((t-1)*100) + iter),".csv"
         open(unit=13, file=fileWriteName2, action="write", access="append")
         ! Write the header row
         write(13, "(a, a, a)") '"X"', ',','"u"'
-        write(13, "(f4.1, a, f4.2, a)")  40*H, ",", u(40), ","
+        write(13, "(f10.5, a, f10.5, a)")  40*H, ",", u(40), ","
         if ((t .ge. 4) .and. (t .lt. 6)) then
-            write(13, "(f4.1, a, f4.2, a)")  42*H, ",", u(42), ","
+            write(13, "(f10.5, a, f10.5, a)")  42*H, ",", u(42), ","
         end if
         do i = 50, 100, 10
-            write(13, "(f4.1, a, f4.2, a)")  i*H, ",", u(i), ","
+            write(13, "(f10.5, a, f10.5, a)")  i*H, ",", u(i), ","
         end do
         close(unit=13)
 
@@ -229,12 +230,12 @@ program main
       open(unit=15, file=fileWriteName4, action="write", access="append")
       ! Write the header row
       write(15, "(a, a, a)") '"X"', ',','"u"'
-      write(15, "(f4.1, a, f4.2, a)")  40*H, ",", u(40), ","
+      write(15, "(f10.5, a, f10.5, a)")  40*H, ",", u(40), ","
       if ((t .ge. 4) .and. (t .lt. 6)) then
-        write(15, "(f4.1, a, f4.2, a)")  42*H, ",", u(42), ","
+        write(15, "(f10.5, a, f10.5, a)")  42*H, ",", u(42), ","
       end if
       do i = 50, 100, 10
-        write(15, "(f4.1, a, f4.2, a)")  i*H, ",", u(i), ","
+        write(15, "(f10.5, a, f10.5, a)")  i*H, ",", u(i), ","
       end do
       close(unit=15)
 
