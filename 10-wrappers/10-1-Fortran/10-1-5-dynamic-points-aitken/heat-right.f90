@@ -62,7 +62,7 @@ program main
   implicit none
 
   integer, parameter :: N = 110
-  double precision :: u1(N), u2(N), k = 0.515, H = 1.0, rSearch = 1.0, tolerance = 8.0e-1
+  double precision :: u1(N), u2(N), k = 0.515, H = 1.0, rSearch = 30, tolerance = 1.0D-50
   type(c_ptr), target :: MUI_COMM_WORLD=c_null_ptr
   integer :: mui_ranks, mui_size, ierr, status, i, j, t, iter, pair_count
   type(c_ptr), target :: uniface_1d_f=c_null_ptr
