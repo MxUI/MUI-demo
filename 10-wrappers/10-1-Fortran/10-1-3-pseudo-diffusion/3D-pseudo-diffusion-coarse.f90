@@ -242,7 +242,7 @@ program main
     !Create spatial and temporal samplers for fetch operation
     call mui_create_sampler_rbf_2d_f(spatial_sampler_rbf_2d,rSampler,point2dY,point2dZ, &
                                         point_count,basisFunc,conservative,smoothFunc, &
-                                        writeMatrix,fileAddress,cutoff,cgSolveTol, &
+                                        writeMatrix,TRIM(makedirMString),cutoff,cgSolveTol, &
                                         cgMaxIter,pouSize,preconditioner,MUI_COMM_WORLD)
     call mui_create_temporal_sampler_exact_2d_f(temporal_sampler_exact_2d, tolerance_sampler)
 
