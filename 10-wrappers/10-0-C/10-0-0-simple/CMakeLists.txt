@@ -5,6 +5,8 @@ set(MUI_BASE_C_DIR "" CACHE PATH "Path to MUI base directory")
 set(MUI_C_LIB_DIR "" CACHE PATH "Path to MUI C library directory")
 set(MUI_C_INCLUDE_DIR "" CACHE PATH "Path to MUI C include directory")
 
+set(MUI_C_CPP_SEPERATE_PATH 0)
+
 find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 
@@ -12,7 +14,7 @@ find_package(MUI QUIET)
 
 if(MUI_BASE_DIR)
   set(MUI_C_LIB_DIR "${MUI_LIB_DIR}")
-  set(MUI_C_INCLUDE_DIR "${MUI_INCLUDE_DIR}")
+  set(MUI_C_INCLUDE_DIR "${MUI_INCLUDE_DIR}/wrappers/C")
 elseif(MUI_BASE_C_DIR)
   set(MUI_C_LIB_DIR "${MUI_BASE_C_DIR}/lib")
   set(MUI_C_INCLUDE_DIR "${MUI_BASE_C_DIR}/include/wrappers/C")

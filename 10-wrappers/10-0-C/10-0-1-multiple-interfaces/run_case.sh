@@ -13,7 +13,7 @@ if [ -n "$1" ]; then
     cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_C_INCLUDE_DIR=$1 -DMUI_C_LIB_DIR=$2
   else
     # Run cmake with the provided path as the MUI base directory
-    cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_BASE_C_DIR=$1
+    cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DCMAKE_PREFIX_PATH=$1
   fi
 else
   # Run cmake with the default MUI directory
