@@ -18,7 +18,9 @@ find_package(MUI QUIET)
 
 if(MUI_BASE_DIR)
   set(MUI_FORTRAN_LIB_DIR "${MUI_LIB_DIR}")
-  set(MUI_FORTRAN_INCLUDE_DIR "${MUI_INCLUDE_DIR}")
+  # Add the include directories
+  include_directories(${MUI_LIB_DIR}/mod)
+  set(MUI_FORTRAN_INCLUDE_DIR "${MUI_INCLUDE_DIR}/wrappers/Fortran")
 elseif(MUI_BASE_FORTRAN_DIR)
   set(MUI_FORTRAN_LIB_DIR "${MUI_BASE_FORTRAN_DIR}/lib")
   set(MUI_FORTRAN_INCLUDE_DIR "${MUI_BASE_FORTRAN_DIR}/include/wrappers/Fortran")
