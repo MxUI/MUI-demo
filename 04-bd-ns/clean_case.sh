@@ -12,3 +12,4 @@ rm -f output.log
 rm -f core.*
 rm -rf build
 rm -f brownian.txt
+rm -f vortex.txt
