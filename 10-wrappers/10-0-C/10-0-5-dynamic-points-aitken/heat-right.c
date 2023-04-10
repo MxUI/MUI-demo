@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
     char *fetch_name = "u";
     char *push_name = "u0";
     const double rSearch = 30; // search radius
-    double tolerance = 8e-1;
+    double tolerance = 1e-20;
     MPI_Comm MUI_COMM_WORLD;
     int mui_ranks, mui_size;
     mui_point_1d points[N];
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 
     // Create spatial and temporal samplers for fetch operation
     mui_sampler_pseudo_nearest_neighbor_1d *spatial_sampler1d = mui_create_sampler_pseudo_nearest_neighbor_1d(rSearch);
-    mui_temporal_sampler_exact_1d *temporal_sampler1d = mui_create_temporal_sampler_exact_1d(1.0);
+    mui_temporal_sampler_exact_1d *temporal_sampler1d = mui_create_temporal_sampler_exact_1d(tolerance);
     mui_algorithm_aitken_1d *algorithm1d = mui_create_algorithm_aitken_1d(0.1, 1.0, MUI_COMM_WORLD, points, value_init, pair_count, 0.0);
 
     // Output
