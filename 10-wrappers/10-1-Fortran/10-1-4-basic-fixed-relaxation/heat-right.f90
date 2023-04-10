@@ -150,7 +150,7 @@ program main
     write(*,*) "Right grid iteration ", iter
 
     ! MUI fetch points
-    call mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d_f(uniface_1d_f, &
+    call mui_fetch_pseudo_n2_exact_fixed_relaxation_1d_f(uniface_1d_f, &
                                    trim(name_fetch)//c_null_char, 4 * H, real(iter, c_double), &
                                     mui_sampler_pseudo_nearest_neighbor_1d_f,  &
                                     mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(4))
