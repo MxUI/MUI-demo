@@ -210,7 +210,7 @@ program main
   end do
 
   !Destroy created 3D MUI objects
-  call mui_destroy_sampler_pseudo_nearest2_linear_3d_f(spatial_sampler_pseudo_n2_linear_3d_f)
+  call mui_destroy_sampler_pseudo_n2_linear_3d_f(spatial_sampler_pseudo_n2_linear_3d_f)
   call mui_destroy_temporal_sampler_exact_3d_f(temporal_sampler_exact_3d_f)
   !Destroy created MUI interfaces note: calls MPI_Finalize(), so need to do last
   call mui_destroy_uniface_3d_f(uniface_3d_f)
