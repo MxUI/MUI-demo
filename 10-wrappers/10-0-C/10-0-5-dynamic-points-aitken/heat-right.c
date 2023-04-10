@@ -187,7 +187,10 @@ int main(int argc, char **argv) {
 	            u[42] = mui_fetch_pseudo_nearest_neighbor_exact_aitken_1d_pair(uniface1d, fetch_name, point_fetch_dynamic, t, iter, spatial_sampler1d, temporal_sampler1d, algorithm1d);
 			}
 
-            // calculate 'interior' points
+			printf( "Right under relaxation factor at t= %d iter= %d is %f\n", t, iter, mui_aitken_get_under_relaxation_factor_1d_pair(algorithm1d,t,iter));
+			printf( "Right residual L2 Norm at t= %d iter= %d is %f\n", t, iter, mui_aitken_get_residual_L2_Norm_1d_pair(algorithm1d,t,iter));
+
+			// calculate 'interior' points
             for ( int i = 50; i <  110; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
             // calculate 'boundary' points
             v[N - 10] = 0.0;
