@@ -183,6 +183,14 @@ program main
                                             mui_temporal_sampler_exact_1d_f,mui_algorithm_aitken_1d_f, u(42))
         end if
 
+        call mui_aitken_get_under_relaxation_factor_1d_pair_f(mui_algorithm_aitken_1d_f, real(t, c_double),  &
+                                            real(iter, c_double), underRelax)
+        call mui_aitken_get_residual_1d_pair_f(mui_algorithm_aitken_1d_f, real(t, c_double),  &
+                                            real(iter, c_double), resL2Norm)
+
+        write(*,*) "Right under relaxation factor at t= ", t, " iter= ", iter, " is ", underRelax
+        write(*,*) "Right residual L2 Norm at t= ", t, " iter= ", iter, " is ", resL2Norm
+
         ! calculate 'interior' points
         do i = 50, 100, 10
             v(i) = u(i) + k / ( H * H ) * ( u(i - 10) + u(i + 10) - 2 * u(i) )
