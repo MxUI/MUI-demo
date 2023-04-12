@@ -65,17 +65,17 @@ data_types = {"u0": mui4py.FLOAT64,
                 "u": mui4py.FLOAT64}
 
 # MUI interface creation
-config3d = mui4py.Config(dimensionMUI, mui4py.FLOAT64)
+config1d = mui4py.Config(dimensionMUI, mui4py.FLOAT64)
 URI = "mpi://right/ifs" 
-iface = mui4py.Uniface(uri=URI, config=config3d) 
+iface = mui4py.Uniface(uri=URI, config=config1d)
 iface.set_data_types(data_types)
 
 # App common world claims 
-MPI_COMM_WORLD = mui4py.mpi_split_by_app()
+MUI_COMM_WORLD = mui4py.mpi_split_by_app()
 
 # Local communicator rank and size
-rank = MPI_COMM_WORLD.Get_rank()
-size = MPI_COMM_WORLD.Get_size()
+rank = MUI_COMM_WORLD.Get_rank()
+size = MUI_COMM_WORLD.Get_size()
 
 u1 = np.zeros(110)
 u2 = np.zeros(110)
@@ -119,7 +119,7 @@ for i in range(40, 110, 10):
 # Samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(30)
-a_algorithm = mui4py.AlgorithmAitken(0.01, 1.0, MPI_COMM_WORLD, ptsVluInit, 0.0)
+a_algorithm = mui4py.AlgorithmAitken(0.01, 1.0, MUI_COMM_WORLD, ptsVluInit, 0.0, config=config1d)
 
 # Print off a hello world message
 print("Hello world from Right rank ", rank, " out of ", size, " MUI processors\n")
@@ -143,6 +143,9 @@ for t in range(1, 11):
         
         if ((t>=4) and (t<6)):
             u1[42] = iface.fetch("u", 42 * H, t, iter, s_sampler, t_sampler, a_algorithm)
+
+        print(f"Right under relaxation factor at t= {t} iter= {iter} is {iface.get_latest_aitken_under_relaxation_factor()}")
+        print(f"Right residual L2 Norm at t= {t} iter= {iter} is {iface.get_latest_aitken_residual_l2_norm()}")
 
         # calculate 'interior' points
         for i in range(50, 100, 10):
