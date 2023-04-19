@@ -1,20 +1,20 @@
- [MUI minimum required: (VERSION 1.2+)]
+ [MUI minimum required: (VERSION 2.0+)]
 # MUI Python Wrapper Demo: 6-pseudo-diffusion
-This demo of the Python wrapper of MUI Multiscale Universal Interface is a 3D scalar field pseudo diffusion case. The `3D_pseudo_diffusion_fine` file generates two discontinuous domains (left domain and right domain viewed towards the negative z-axis direction) with a fine mesh density, while the `3D_pseudo_diffusion_coarse` file generates one middle domain to "connect" the left and right domains with coarse mesh density. These three domains have the same dimension and align in the x-axis direction. The minimum x-axis boundary of the left domain has a scalar field source, which have a maximum value at the boundary centre and gradually decreases to outward. With the time increases, the scalar field diffuses along the positive x-axis direction. At each time instants, the left boundary of the middle domain fetches the field values from the right boundary of the left domain and the right boundary of the middle domain push field values to the left boundary of the right domain through MUI 2D interfaces with the RBF spatial sampler.
+This demo of the Python wrapper of MUI Multiscale Universal Interface is a 3D scalar field pseudo diffusion case. The C++ `3D-pseudo-diffusion-fine` file generates two discontinuous domains (left domain and right domain viewed towards the negative z-axis direction) with a fine mesh density, while the Python `3D-pseudo-diffusion-coarse` file generates one middle domain to "connect" the left and right domains with coarse mesh density. These three domains have the same dimension and align in the x-axis direction. The minimum x-axis boundary of the left domain has a scalar field source, which have a maximum value at the boundary centre and gradually decreases to outward. With the time increases, the scalar field diffuses along the positive x-axis direction. At each time instants, the left boundary of the middle domain fetches the field values from the right boundary of the left domain and the right boundary of the middle domain push field values to the left boundary of the right domain through MUI 2D interfaces with the RBF spatial sampler.
 
 | Sketch of this demo |
 |:------------------------------------------------------------------------------------------------------------------:|
-| <img src='Sketch.jpg' width='1451px'/>                                                                           |
+| <img src='Resources/Sketch.jpg' width='1451px'/>                                                                           |
 
 | Result at time-step = 200 |
 |:------------------------------------------------------------------------------------------------------------------:|
-|<img src='Result.jpg' width='1316px'/>|
+|<img src='Resources/Result.jpg' width='1316px'/>|
 
 This demo shows how to:
  1. Use the spatial sampler of Radial Basis Function between C++ and Python codes;
 
 This demo contains:
- 1. 3D_pseudo_diffusion_fine.cpp & 3D_pseudo_diffusion_coarse.py: coupling domains; 
+ 1. 3D-pseudo-diffusion-fine.cpp & 3D-pseudo-diffusion-coarse.py: coupling domains; 
  2. demo6_config.h: configure file of the MUI uniface;
  3. CMakeLists.txt: CMake file;
  4. README.md
@@ -25,33 +25,23 @@ The source code is dual-licensed under both GPL v3 and Apache v2.
 
 ## Usage
 
-To run the examples you need a `mpic++` wrapper with C++11 enabled backend, CMake V2.8+ installed, `Eigen3` installed, Python wrapper of MUI (mui4py) compiled with the Makefile variable "USE_RBF = True".
-
+To run the examples you need a `mpic++` wrapper with C++11 enabled backend, CMake V3.9+ installed, Python wrapper of MUI (mui4py) compiled.
 To run the demo:
 
 ```bash
-export CMAKE_INCLUDE_PATH=/path/to/MUI/
-cmake .
-
-make > make.log 2>&1
-
-mpirun -np 1 ./3D_pseudo_diffusion_fine :\
-       -np 1 python3 -m mpi4py 3D_pseudo_diffusion_coarse.py >\
-		parallel.log 2>&1
-
+bash run_case.sh
 ```
-
-To visualize the results:
-
-Open `paraview` and read .csv files from the results folder.
-
-Use `TableToPoints` filter to generate points and use `Delaunay3D` filter to generate 3D volume.
-
-The `Slice` filter can be used to generate slice of the domains and `contour` filter can be used to illustrate the scalar field contours.
+`paraview` will open automatically after running to visualise the results.
 
 The integration of the scalar field:
 
 The instantaneous integration of the scalar field of each boundary faces that perpendicular to the x-axis direction is in faceIntegrationD1_D3.txt and faceIntegrationD2.txt of the results folder.  
+
+To clean the demo directory:
+
+```bash
+bash clean_case.sh
+```
 
 ## Contact
 

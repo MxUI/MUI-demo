@@ -40,10 +40,6 @@
 #ifndef DEMO6_CONFIG_H
 #define DEMO6_CONFIG_H
 
-#include "util.h"
-#include "dim.h"
-#include "exception.h"
-
 namespace mui {
 
 struct demo6_config {
@@ -58,11 +54,19 @@ struct demo6_config {
 
   /// MUI type define
   using REAL = double;
-  using INT = int32_t;
+  using INT = int64_t;
 
   using point_type = point<REAL,D>;
   using time_type = REAL; // INT-typed time stamp might be an alternative
-  using data_types = type_list<int32_t,int64_t,double>;
+  using iterator_type = INT; //- Typically INT for sub-iteration count
+  using data_types = type_list<uint32_t,
+								 uint64_t,
+								 int32_t,
+								 int64_t,
+								 double,
+								 float,
+								 std::string
+								>;
 };
 }
 
