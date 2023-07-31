@@ -75,9 +75,8 @@ int main(int argc, char ** argv) {
   std::string makedirCRString = "coupling_results" + std::to_string(rank);
   mkdir(makedirCRString.c_str(), 0777);
 
-  /// Create rbf matrix folder
+  /// Define rbf matrix folder
   std::string makedirMString = "rbfFineMatrix" + std::to_string(rank);
-  mkdir(makedirMString.c_str(), 0777);
 
   /// Define the name of MUI domain
   std::string domain = "fineDomain";
@@ -103,16 +102,16 @@ int main(int argc, char ** argv) {
 
   /// Define parameters of the RBF sampler
   /// Define the search radius of the RBF sampler
-  double rSampler   = 1.0;
-  int basisFunc     = 1;
-  bool conservative = true;
-  double cutoff		= 1e-9;
-  bool smoothFunc   = false;
-  bool writeMatrix  = true;
-  double cgSolveTol	= 1e-6;
-  int cgMaxIter     = 500;
-  int preconditioner= 1;
-  int pouSize    	= 50;
+  double rSampler      = 1.0;
+  int basisFunc        = 1;
+  bool conservative    = true;
+  double cutoff		   = 1e-9;
+  bool smoothFunc      = false;
+  bool generateMatrix  = true;
+  double cgSolveTol	   = 1e-6;
+  int cgMaxIter        = 500;
+  int preconditioner   = 1;
+  int pouSize    	   = 50;
   std::string fileAddress(makedirMString);
 
 	/// Setup diffusion rate
@@ -296,7 +295,7 @@ int main(int argc, char ** argv) {
 
 	/// Define spatial and temporal samplers
   mui::sampler_rbf<mui::demo7_config> spatial_sampler(rSampler, point2dvec,
-      basisFunc, conservative, smoothFunc, writeMatrix, fileAddress,
+      basisFunc, conservative, smoothFunc, generateMatrix, fileAddress,
       cutoff, cgSolveTol, cgMaxIter, pouSize, preconditioner, world);
   mui::temporal_sampler_exact<mui::demo7_config> temporal_sampler;
 
