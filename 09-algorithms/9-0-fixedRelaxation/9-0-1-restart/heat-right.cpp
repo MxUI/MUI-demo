@@ -105,7 +105,7 @@ int main( int argc, char ** argv ) {
     MPI_Comm_rank( world, &rank );
     MPI_Comm_size( world, &size );
 
-    /// Create folder
+    /// Create rbf matrix folder
     std::string makedirMString = "results_right" + std::to_string(rank);
     mkdir(makedirMString.c_str(), 0777);
     std::string fileAddress(makedirMString);
@@ -141,10 +141,10 @@ int main( int argc, char ** argv ) {
     for ( int i = 4; i <  11; i++ ) outputFileRight << i * H << "," << u[i] << ", \n";
     outputFileRight.close();
 
-    for ( int iter = 1; iter <= 1000; ++iter ) {
-        printf( "Right grid iteration %d\n", iter );
+    for ( int t = 1; t <= 1000; ++t ) {
+        printf( "Right grid step %d\n", t );
 
-            u[4] = interface.fetch( "u", 4 * H, iter, s1, s2, fr );
+            u[4] = interface.fetch( "u", 4 * H, t, s1, s2, fr );
 
             // calculate 'interior' points
             for ( int i = 5; i <  11; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
@@ -154,14 +154,14 @@ int main( int argc, char ** argv ) {
 
             // push data to the other solver
             interface.push( "u0", 6 * H, u[6] );
-            interface.commit( iter );
+            interface.commit( t );
         // I/O
         std::swap( u, v );
 
         /// Output
         std::ofstream outputFileRight;
         std::string filenameR = "results_right" + std::to_string(rank) + "/solution-right_FR_0"
-          + std::to_string(iter) + ".csv";
+          + std::to_string(t) + ".csv";
         outputFileRight.open(filenameR);
         outputFileRight << "\"X\",\"u\"\n";
         for ( int i = 4; i <  11; i++ ) outputFileRight << i * H << "," << u[i] << ", \n";
