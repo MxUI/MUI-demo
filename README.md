@@ -17,7 +17,7 @@ bash run_case.sh
 ```
 A log file "output.log" will be generated.
 
-In case you encounter an error related to `mui.h` not being found during compilation with CMake, you can resolve this issue by specifying the path to MUI using the command:
+If you have not installed MUI system wide as a CMake package and you encounter an error related to `mui.h` not being found during compilation, you can resolve this issue by specifying the path to MUI using the command:
 
 ```bash
 bash run_case.sh /path/to/MUI
@@ -49,4 +49,4 @@ bash clean_case.sh
 
 ## Contact
 
-Should you have any question please do not hesitate to contact the developers, a list can be found within the MxUI GitHub organisation pages [https://github.com/MxUI/MUI](https://github.com/MxUI/MUI)
+Should you have any question please do not hesitate to contact the developers, a list can be found on the MUI GitHub website [https://github.com/MxUI/MUI](https://github.com/MxUI/MUI)
