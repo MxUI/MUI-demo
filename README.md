@@ -3,11 +3,11 @@ This repository contains demos and example solvers that make use of the MUI Mult
 
 ## Licensing
 
-The source code is dual-licensed under both GPL v3 and Apache v2.
+The source code is dual-licensed under both GPL v3 and Apache v2, copies of both licenses should have been provided along with this soruce code.
 
 ## Run Demos
 
-To run the demos you need a copy of the [MUI code](https://github.com/MxUI/MUI), a `mpic++` wrapper with C++11 enabled backend. You also need to install C, FORTRAN and/or Python wrappers of MUI if you want to run demos for wrappers.
+To run the demos you need a copy of the [MUI code (at least version 2.0)](https://github.com/MxUI/MUI), a `mpic++` wrapper with C++11 enabled backend. You also need to install C, FORTRAN and/or Python wrappers of MUI if you want to run demos for wrappers.
 
 To run demos:
 
