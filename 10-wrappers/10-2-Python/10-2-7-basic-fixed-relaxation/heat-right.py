@@ -113,7 +113,7 @@ for i in range(4, 11):
 # Samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(0.1)
-fr_algorithm = mui4py.AlgorithmFixedRelaxation(0.01,ptsVluInit)
+fr_algorithm = mui4py.AlgorithmFixedRelaxation(0.01,MUI_COMM_WORLD,ptsVluInit)
 
 # Print off a hello world message
 print("Hello world from Right rank ", rank, " out of ", size, " MUI processors\n")
