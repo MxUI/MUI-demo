@@ -24,7 +24,7 @@ START=$SECONDS
 #      aborts. If a python process exit with failure all processes in MPI_COMM_WORLD       
 #      will be aborted so hangs are avoided.
 
-mpirun -np 1 PUSHER_FETCHER_0 :\
+mpirun -np 1 ./PUSHER_FETCHER_0 :\
        -np 1 python3 -m mpi4py PUSHER_FETCHER_1.py 2>&1 | tee output.log
 
 DURATION=$(( SECONDS - START ))

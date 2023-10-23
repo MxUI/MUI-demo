@@ -11,14 +11,14 @@ if [ -n "$1" ]; then
   if [ -n "$2" ]; then
     if [ -n "$3" ]; then
 	  # Run cmake with the provided path as the MUI include and lib directories
-	  cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_C_INCLUDE_DIR=$1 -DMUI_C_LIB_DIR=$2 -DCMAKE_PREFIX_PATH=$3 $4
+	  cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_C_INCLUDE_DIR=$1 -DMUI_C_LIB_DIR=$2 -DCMAKE_PREFIX_PATH=$3
     else
 	  # Run cmake with the provided path as the MUI include and lib directories
 	  cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_C_INCLUDE_DIR=$1 -DMUI_C_LIB_DIR=$2
     fi
   else
     # Run cmake with the provided path as the MUI base directory
-    cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DCMAKE_PREFIX_PATH=$1
+    cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_BASE_DIR=$1 -DCMAKE_PREFIX_PATH=$1/share/MUI-2.0/cmake
   fi
 else
   # Run cmake with the default MUI directory
