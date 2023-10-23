@@ -69,35 +69,35 @@ int main( int argc, char ** argv ) {
 
     /// Initialise values from file
     std::string inoutFilenameL = "Resources/right_FR.csv";
-    std::fstream inFile;
-    std::vector<std::vector<std::string>> content;
-    std::vector<std::string> row;
+	std::fstream inFile;
+	std::vector<std::vector<std::string>> content;
+	std::vector<std::string> row;
     std::string line, word;
     inFile.open(inoutFilenameL, std::ios::in);
     if(inFile.is_open())
     {
-        while(getline(inFile, line)) {
-            row.clear();
-            std::stringstream str(line);
-            while (std::getline(str, word, ',')) {
-                row.push_back(word);
-           }
-           content.push_back(row);
-        }
+		while(getline(inFile, line)) {
+			row.clear();
+			std::stringstream str(line);
+			while (std::getline(str, word, ',')) {
+				row.push_back(word);
+		   }
+		   content.push_back(row);
+		}
 
-        for ( int i = 40; i <  110; i+=10 ) u1[i] = stod(content[i*0.1-3][1]);
+		for ( int i = 40; i <  110; i+=10 ) u1[i] = stod(content[i*0.1-3][1]);
 
-    } else {
-        std::cerr<<"right_FR.csv missing" << std::endl;
-        for ( int i = 40; i <  110; i+=10 ) u1[i] = 0.0;
-    }
+	} else {
+		std::cerr<<"right_FR.csv missing" << std::endl;
+		for ( int i = 40; i <  110; i+=10 ) u1[i] = 0.0;
+	}
 
     inFile.close();
 
     uniface1d interface( "mpi://right/ifs" );
 
-    MPI_Comm  world = mui::mpi_split_by_app();
-    MPI_Comm*  Cppworld = &world;
+	MPI_Comm  world = mui::mpi_split_by_app();
+	MPI_Comm*  Cppworld = &world;
     int rankLocal = MPI::COMM_WORLD.Get_rank();
     int sizeLocal = MPI::COMM_WORLD.Get_size();
     
@@ -116,14 +116,14 @@ int main( int argc, char ** argv ) {
     std::vector<std::pair<mui::point1d, double>> ptsVluInit;
 
     for ( int i = 40; i <  110; i+=10 ) {
-        mui::point1d pt(i);
-        ptsVluInit.push_back(std::make_pair(pt,u1[i]));
-    }
+		mui::point1d pt(i);
+		ptsVluInit.push_back(std::make_pair(pt,u1[i]));
+	}
 
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
     temporal_sampler_exact1d  s2;
-    algo_fixed_relaxation1d fr(0.01,world,ptsVluInit);
+	algo_fixed_relaxation1d fr(0.01,ptsVluInit);
 
      // Print off a hello world message
     printf("Hello world from Right rank %d out of %d MUI processors\n",
@@ -146,11 +146,9 @@ int main( int argc, char ** argv ) {
 
             u[40] = interface.fetch( "u", 40 * H, t, s1, s2, fr );
 
-            if ((t>=100) && (t<200)) {
-                u[42] = interface.fetch( "u", 42 * H, t, s1, s2, fr  );
-            }
-            printf( "Right under relaxation factor at t= %d is %f\n", t, fr.get_under_relaxation_factor(t));
-            printf( "Right residual L2 Norm at t= %d is %f\n", t, fr.get_residual_L2_Norm(t));
+			if ((t>=100) && (t<200)) {
+				u[42] = interface.fetch( "u", 42 * H, t, s1, s2, fr  );
+			}
 
             // calculate 'interior' points
             for ( int i = 50; i <  110; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
@@ -158,9 +156,9 @@ int main( int argc, char ** argv ) {
             v[N - 10] = 0.0;
             v[40]     = u[40    ];
 
-            if ((t>=100) && (t<200)) {
-                v[42]     = u[42    ];
-            }
+			if ((t>=100) && (t<200)) {
+				v[42]     = u[42    ];
+			}
 
             // push data to the other solver
             interface.push( "u0", 60 * H, u[60] );
@@ -175,14 +173,14 @@ int main( int argc, char ** argv ) {
         outputFileRight.open(filenameR);
         outputFileRight << "\"X\",\"u\"\n";
 
-        outputFileRight << 40 * H << "," << u[40] << ", \n";
+		outputFileRight << 40 * H << "," << u[40] << ", \n";
 
-        if ((t>=100) && (t<200)) {
-            outputFileRight << 42 * H << "," << u[42] << ", \n";
-        }
+		if ((t>=100) && (t<200)) {
+			outputFileRight << 42 * H << "," << u[42] << ", \n";
+		}
 
-        for ( int i = 50; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
-        outputFileRight.close();
+		for ( int i = 50; i <  110; i+=10 ) outputFileRight << i * H << "," << u[i] << ", \n";
+		outputFileRight.close();
 
     }
 

@@ -125,7 +125,7 @@ int main( int argc, char ** argv ) {
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(30);
     temporal_sampler_exact1d  s2;
-    algo_fixed_relaxation1d fr(0.01,world,ptsVluInit);
+    algo_fixed_relaxation1d fr(0.01,ptsVluInit);
 
      // Print off a hello world message
     printf("Hello world from Left rank %d out of %d MUI processors\n",
@@ -152,11 +152,9 @@ int main( int argc, char ** argv ) {
 
             u[60] = interface.fetch( "u0", 60 * H, t, s1, s2, fr );
 
-            if ((t>=150) && (t<250)) {
-                u[58] = interface.fetch( "u0", 58 * H, t, s1, s2, fr );
-            }
-            printf( "Left under relaxation factor at t= %d is %f\n", t, fr.get_under_relaxation_factor(t));
-            printf( "Left residual L2 Norm at t= %d is %f\n", t, fr.get_residual_L2_Norm(t));
+			if ((t>=150) && (t<250)) {
+				u[58] = interface.fetch( "u0", 58 * H, t, s1, s2, fr );
+			}
 
             // calculate 'interior' points
             for ( int i = 10; i <  60; i+=10 ) v[i] = u[i] + k / ( H * H ) * ( u[i - 10] + u[i + 10] - 2 * u[i] );
@@ -165,9 +163,9 @@ int main( int argc, char ** argv ) {
 
             v[N - 10] = u[N - 10]; 
 
-            if ((t>=150) && (t<250)) {
-                v[58] = u[58]; 
-            }
+			if ((t>=150) && (t<250)) {
+				v[58] = u[58]; 
+			}
 
         // I/O
         std::swap( u, v );
@@ -178,13 +176,13 @@ int main( int argc, char ** argv ) {
         outputFileLeft.open(filenameL);
         outputFileLeft << "\"X\",\"u\"\n";
 
-        for ( int i = 0; i <  60; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
+		for ( int i = 0; i <  60; i+=10 ) outputFileLeft << i * H << "," << u[i] << ", \n";
 
-        if ((t>=150) && (t<250)) {
-            outputFileLeft << 58 * H << "," << u[58] << ", \n";
-        }
+		if ((t>=150) && (t<250)) {
+			outputFileLeft << 58 * H << "," << u[58] << ", \n";
+		}
 
-        outputFileLeft << 60 * H << "," << u[60] << ", \n";
+		outputFileLeft << 60 * H << "," << u[60] << ", \n";
 
         outputFileLeft.close();
 

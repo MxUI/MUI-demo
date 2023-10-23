@@ -96,19 +96,12 @@ basisFunc = 1                                   # Specify RBF basis function 0-G
 conservative = True                             # Enable conservative OR consistent RBF form
 cutOff = 1e-9                                   # Cut-off value for Gaussian RBF basis function
 smoothFunc = False                              # Enable/disable RBF smoothing function during matrix creation
-writeMatrix = True                              # Enable/disable writing of the matrix (if not reading)
+generateMatrix = True                              # Enable/disable writing of the matrix (if not reading)
 cgSolveTol = 1e-6;                              # Conjugate Gradient solver tolerance
 cgMaxIter = 500;                                # Conjugate Gradient solver maximum iterations (-1 = value determined by tolerance)
 preconditioner = 1;                             # Preconditioner of Conjugate Gradient solver
 pouSize = 50;                                   # RBF Partition of Unity patch size
 rbfMatrixFolder = "rbfCoarseMatrix" + str(rank) # Output folder for the RBF matrix files
-
-# Create the RBF Matrix Folder includes all intermediate folders if don't exists
-if not os.path.exists(rbfMatrixFolder):
-    os.makedirs(rbfMatrixFolder)
-    print("Folder " , rbfMatrixFolder, " created ")
-else:
-    print("Folder " , rbfMatrixFolder,  " already exists")
 
 # Setup diffusion rate
 dr = 0.5
@@ -219,7 +212,7 @@ MUI_Interfaces["interface2D02"].announce_send_span(0, (steps+1), send_span, sync
 
 # Spatial/temporal samplers
 t_sampler = mui4py.TemporalSamplerExact()
-s_sampler = mui4py.SamplerRbf(rSampler, point2dList, basisFunc, conservative, smoothFunc, writeMatrix, rbfMatrixFolder, cutOff, cgSolveTol, cgMaxIter, pouSize, preconditioner, MUI_COMM_WORLD)
+s_sampler = mui4py.SamplerRbf(rSampler, point2dList, basisFunc, conservative, smoothFunc, generateMatrix, rbfMatrixFolder, cutOff, cgSolveTol, cgMaxIter, pouSize, preconditioner, MUI_COMM_WORLD)
 
 # Commit ZERO step
 MUI_Interfaces["interface2D02"].commit(0)

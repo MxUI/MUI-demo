@@ -14,15 +14,11 @@ include_directories(${MPI_INCLUDE_PATH})
 find_package(MUI QUIET)
 
 if(MUI_BASE_DIR)
-  set(MUI_FORTRAN_LIB_DIR "${MUI_LIB_DIR}")
+  set(MUI_FORTRAN_LIB_DIR "${MUI_BASE_DIR}/lib")
   # Add the include directories
-  include_directories(${MUI_LIB_DIR}/mod)
-  set(MUI_FORTRAN_INCLUDE_DIR "${MUI_INCLUDE_DIR}/wrappers/Fortran")
+  include_directories(${MUI_BASE_DIR}/lib/mod)
+  set(MUI_FORTRAN_INCLUDE_DIR "${MUI_BASE_DIR}/include/wrappers/Fortran")
   include_directories(${MUI_INCLUDE_DIR})
-elseif(MUI_BASE_FORTRAN_DIR)
-  set(MUI_FORTRAN_LIB_DIR "${MUI_BASE_FORTRAN_DIR}/lib")
-  set(MUI_FORTRAN_INCLUDE_DIR "${MUI_BASE_FORTRAN_DIR}/include/wrappers/Fortran")
-  include_directories(${MUI_BASE_FORTRAN_DIR})
 endif()
 
 find_library(MUI_FORTRAN_WRAPPER_LIB NAMES MUI_Fortran_wrapper PATHS ${MUI_FORTRAN_LIB_DIR})

@@ -13,11 +13,8 @@ include_directories(${MPI_INCLUDE_PATH})
 find_package(MUI QUIET)
 
 if(MUI_BASE_DIR)
-  set(MUI_C_LIB_DIR "${MUI_LIB_DIR}")
-  set(MUI_C_INCLUDE_DIR "${MUI_INCLUDE_DIR}/wrappers/C")
-elseif(MUI_BASE_C_DIR)
-  set(MUI_C_LIB_DIR "${MUI_BASE_C_DIR}/lib")
-  set(MUI_C_INCLUDE_DIR "${MUI_BASE_C_DIR}/include/wrappers/C")
+  set(MUI_C_LIB_DIR "${MUI_BASE_DIR}/lib")
+  set(MUI_C_INCLUDE_DIR "${MUI_BASE_DIR}/include/wrappers/C")
 endif()
 
 find_library(MUI_C_WRAPPER_LIB NAMES MUI_C_wrapper PATHS ${MUI_C_LIB_DIR})
