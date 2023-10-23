@@ -76,7 +76,6 @@ int main(int argc, char ** argv) {
 
   /// Create rbf matrix folder
   std::string makedirMString = "rbfFineMatrix" + std::to_string(rank);
-  mkdir(makedirMString.c_str(), 0777);
 
   /// Define the name of MUI domain
   std::string domain = "fineDomain";
@@ -103,7 +102,7 @@ int main(int argc, char ** argv) {
   bool conservative = true;
   double cutoff		= 1e-9;
   bool smoothFunc   = false;
-  bool writeMatrix  = true;
+  bool generateMatrix  = true;
   double cgSolveTol	= 1e-6;
   int cgMaxIter     = 500;
   int preconditioner= 1;
@@ -279,7 +278,7 @@ int main(int argc, char ** argv) {
 
 	/// Define spatial and temporal samplers
   mui::sampler_rbf2d<double> spatial_sampler(rSampler, point2dvec,
-      basisFunc, conservative, smoothFunc, writeMatrix, fileAddress,
+      basisFunc, conservative, smoothFunc, generateMatrix, fileAddress,
       cutoff, cgSolveTol, cgMaxIter, pouSize, preconditioner, world);
   mui::temporal_sampler_exact2d temporal_sampler;
 

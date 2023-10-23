@@ -77,7 +77,6 @@ int main(int argc, char **argv) {
     /// Create rbf matrix folder
     char makedirMString[32];
     sprintf(makedirMString, "rbfCoarseMatrix%d", mui_ranks);
-    mkdir(makedirMString, 0777);
 
     /// Define the name of MUI domain
     char *domain = (char*) malloc(strlen("coarseDomain") + 1);
@@ -124,7 +123,7 @@ int main(int argc, char **argv) {
     int conservative  = 1;
     double cutoff     = 1e-9;
     int smoothFunc    = 0;
-    int writeMatrix   = 1;
+    int generateMatrix   = 1;
     double cgSolveTol = 1e-6;
     int cgMaxIter     = 500;
     int preconditioner= 1;
@@ -248,7 +247,7 @@ int main(int argc, char **argv) {
 
     /// Define spatial and temporal samplers
     mui_sampler_rbf_2d *spatial_sampler2d = mui_create_sampler_rbf_2d(rSampler, point2d, point_count, basisFunc, conservative,
-            smoothFunc, writeMatrix, fileAddress, cutoff, cgSolveTol, cgMaxIter, pouSize, preconditioner, MUI_COMM_WORLD);
+            smoothFunc, generateMatrix, fileAddress, cutoff, cgSolveTol, cgMaxIter, pouSize, preconditioner, MUI_COMM_WORLD);
     mui_temporal_sampler_exact_2d *temporal_sampler2d = mui_create_temporal_sampler_exact_2d(8e-1);
 
     /// Commit ZERO step of MUI
