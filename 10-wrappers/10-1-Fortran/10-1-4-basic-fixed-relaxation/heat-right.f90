@@ -71,6 +71,7 @@ program main
   type(c_ptr), target :: mui_algorithm_fixed_relaxation_1d_f=c_null_ptr
 
   real(c_double), dimension (:), allocatable :: pp, value_init, u, v, tempValue
+  real(c_double) :: underRelax,resL2Norm
   character(len=1024) :: appname = "right"
   character(len=1024) :: uriheader = "mpi://"
   character(len=1024) :: uridomain = "/ifs"
@@ -155,6 +156,14 @@ program main
                                    trim(name_fetch)//c_null_char, 4 * H, real(iter, c_double), &
                                     mui_sampler_pseudo_nearest_neighbor_1d_f,  &
                                     mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(4))
+
+    call mui_fixed_relaxation_get_under_relaxation_factor_1d_f(mui_algorithm_fixed_relaxation_1d_f,  &
+                                        real(iter, c_double), underRelax)
+    call mui_fixed_relaxation_get_residual_1d_f(mui_algorithm_fixed_relaxation_1d_f,  &
+                                        real(iter, c_double), resL2Norm)
+
+    write(*,*) "Right under relaxation factor at iter= ", iter, " is ", underRelax
+    write(*,*) "Right residual L2 Norm at iter= ", iter, " is ", resL2Norm
 
     ! calculate 'interior' points
     do i = 5, 10
