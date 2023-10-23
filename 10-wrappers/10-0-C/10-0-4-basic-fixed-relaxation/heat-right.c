@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
 	// Create spatial and temporal samplers for fetch operation
     mui_sampler_pseudo_nearest_neighbor_1d *spatial_sampler1d = mui_create_sampler_pseudo_nearest_neighbor_1d(10.0);
 	mui_temporal_sampler_exact_1d *temporal_sampler1d = mui_create_temporal_sampler_exact_1d(1.0);
-	mui_algorithm_fixed_relaxation_1d *algorithm1d = mui_create_algorithm_fixed_relaxation_1d(0.01, points, value_init, pair_count);
+	mui_algorithm_fixed_relaxation_1d *algorithm1d = mui_create_algorithm_fixed_relaxation_1d(0.01, MUI_COMM_WORLD, points, value_init, pair_count);
 
 	// Output
 	char fileName[100];

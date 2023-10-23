@@ -129,7 +129,8 @@ program main
   ! MUI define spatial and temporal samplers
   call mui_create_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f, rSearch)
   call mui_create_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f, tolerance)
-  call mui_create_algorithm_fixed_relaxation_1d_f(mui_algorithm_fixed_relaxation_1d_f, DBLE(0.01), pp, value_init, pair_count)
+  call mui_create_algorithm_fixed_relaxation_1d_f(mui_algorithm_fixed_relaxation_1d_f, DBLE(0.01), & 
+                                                  MUI_COMM_WORLD, pp, value_init, pair_count)
 
   ! Create the file name
   write(fileWriteName, "(a, i0, a)") "results_right", mui_ranks, "/solution-right_FR_0.csv"
