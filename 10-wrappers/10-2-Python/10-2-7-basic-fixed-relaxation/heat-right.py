@@ -129,6 +129,9 @@ for iter in range(1, 1001):
     print(f"Right grid iteration {iter}")
     u1[4] = iface.fetch("u", 4 * H, iter, s_sampler, t_sampler, fr_algorithm)
 
+    print(f"Right under relaxation factor at iter= {iter} is {iface.get_latest_fixed_relaxation_under_relaxation_factor()}")
+    print(f"Right residual L2 Norm at iter= {iter} is {iface.get_latest_fixed_relaxation_residual_l2_norm()}")
+
     # calculate 'interior' points
     for i in range(5, 10):
         u2[i] = u1[i] + k / (H * H) * (u1[i - 1] + u1[i + 1] - 2 * u1[i])
