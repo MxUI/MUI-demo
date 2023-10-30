@@ -13,7 +13,7 @@ if [ -n "$1" ]; then
     cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_FORTRAN_INCLUDE_DIR=$1 -DMUI_FORTRAN_LIB_DIR=$2
   else
     # Run cmake with the provided path as the MUI base directory
-    cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DCMAKE_PREFIX_PATH=$1
+    cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../ .. -DMUI_BASE_DIR=$1
   fi
 else
   # Run cmake with the default MUI directory

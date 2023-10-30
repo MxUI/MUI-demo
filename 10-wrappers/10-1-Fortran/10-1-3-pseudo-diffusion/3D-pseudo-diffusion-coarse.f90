@@ -59,7 +59,7 @@ program main
     integer(c_int) :: basisFunc = 1
     integer(c_int) :: conservative = 1
     integer(c_int) :: smoothFunc = 0
-    integer(c_int) :: writeMatrix = 1
+    integer(c_int) :: generateMatrix = 1
     integer(c_int) :: cgMaxIter = 500
     integer(c_int) :: preconditioner = 1
     integer(c_int) :: pouSize = 50
@@ -164,9 +164,8 @@ program main
 
     tolerance = (lx / (Nx - 1)) * 0.5
 
-    ! Create rbf matrix folder
+    ! Define rbf matrix folder
     write(makedirMString,'(a,i0)') "rbfCoarseMatrix", mui_ranks
-    call system('mkdir -m 777 '//trim(makedirMString), ierr)
     fileAddress = TRIM(makedirMString)
 
     ! Check if directory was created successfully
@@ -242,7 +241,7 @@ program main
     !Create spatial and temporal samplers for fetch operation
     call mui_create_sampler_rbf_2d_f(spatial_sampler_rbf_2d,rSampler,point2dY,point2dZ, &
                                         point_count,basisFunc,conservative,smoothFunc, &
-                                        writeMatrix,TRIM(makedirMString),cutoff,cgSolveTol, &
+                                        generateMatrix,TRIM(makedirMString),cutoff,cgSolveTol, &
                                         cgMaxIter,pouSize,preconditioner,MUI_COMM_WORLD)
     call mui_create_temporal_sampler_exact_2d_f(temporal_sampler_exact_2d, tolerance_sampler)
 

@@ -24,8 +24,8 @@ START=$SECONDS
 #      aborts. If a python process exit with failure all processes in MPI_COMM_WORLD       
 #      will be aborted so hangs are avoided.
 
-mpirun -np 2 3D-pseudo-diffusion-fine :\
-       -np 2 python3 -m mpi4py 3D-pseudo-diffusion-coarse.py 2>&1 | tee output.log
+mpirun -np 1 3D-pseudo-diffusion-fine :\
+       -np 1 python3 -m mpi4py 3D-pseudo-diffusion-coarse.py 2>&1 | tee output.log
 
 DURATION=$(( SECONDS - START ))
 
@@ -44,4 +44,4 @@ else
     echo "Completed in $DURATION seconds"
 fi
 
-paraview Resources/view.pvsm
+# paraview Resources/view.pvsm
