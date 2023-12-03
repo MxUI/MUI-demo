@@ -57,6 +57,8 @@ program main
 
   implicit none
 
+  include "mpif.h"
+
   !Local variables
   character(len=1024) :: arg_domain
   character(len=1024) :: arg_interface
@@ -90,7 +92,8 @@ program main
   real(c_double) :: fetch_result_1d=-3_c_double
   real(c_double) :: fetch_result_2d=-3_c_double
   real(c_double) :: fetch_result_3d=-3_c_double
-  type(c_ptr) :: MUI_COMM_WORLD
+  integer(c_int) :: MUI_COMM_WORLD
+  integer :: mui_ranks, mui_size, ierr, my_rank, num_procs, total_rank, total_procs
   integer(kind=8) :: i
 
   !Read in URI from command line
@@ -108,6 +111,23 @@ program main
 
   !Call mui_mpi_split_by_app_f() function to init MPI
   call mui_mpi_split_by_app_f(MUI_COMM_WORLD)
+
+  ! MUI/MPI get comm size & rank
+  call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
+  call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
+
+  call MPI_COMM_RANK(MUI_COMM_WORLD, my_rank, ierr)
+  call MPI_COMM_SIZE(MUI_COMM_WORLD, num_procs, ierr)
+
+  call MPI_COMM_RANK(MPI_COMM_WORLD, total_rank, ierr)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD, total_procs, ierr)
+
+  print *, "MPI Size from MUI func: ", mui_size, &
+           " MPI Size from MPI func with MUI_COMM_WORLD: ", num_procs, &
+           " MPI Size from MPI func with MPI_COMM_WORLD: ", total_procs
+  print *, "MPI Rank from MUI func: ", mui_ranks, &
+           " MPI Rank from MPI func with MUI_COMM_WORLD: ", my_rank, &
+           " MPI Rank from MPI func with MPI_COMM_WORLD: ", total_rank
 
   !*************************
   !* multiple 1D interface *
