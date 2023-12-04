@@ -61,10 +61,12 @@ program main
 
   implicit none
 
+  include "mpif.h"
+
   integer, parameter :: N = 110
   double precision :: u1(N), u2(N), k = 0.515, H = 1.0, rSearch = 30, tolerance = 1.0D-50
-  type(c_ptr), target :: MUI_COMM_WORLD=c_null_ptr
-  integer :: mui_ranks, mui_size, ierr, status, i, j, t, iter, pair_count
+  integer(c_int) :: MUI_COMM_WORLD
+  integer :: mui_ranks, mui_size, ierr, status, i, j, t, iter, pair_count, my_rank, num_procs, total_rank, total_procs
   type(c_ptr), target :: uniface_1d_f=c_null_ptr
   type(c_ptr), target :: mui_sampler_pseudo_nearest_neighbor_1d_f=c_null_ptr
   type(c_ptr), target :: mui_temporal_sampler_exact_1d_f=c_null_ptr
@@ -97,7 +99,19 @@ program main
   ! MUI/MPI get comm size & rank
   call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
   call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
-  print *, "{", trim(appname),"}: COMM_SIZE: ", mui_size, "COMM_RANK: ", mui_ranks
+
+  call MPI_COMM_RANK(MUI_COMM_WORLD, my_rank, ierr)
+  call MPI_COMM_SIZE(MUI_COMM_WORLD, num_procs, ierr)
+
+  call MPI_COMM_RANK(MPI_COMM_WORLD, total_rank, ierr)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD, total_procs, ierr)
+
+  print *, "{", trim(appname),"}: MPI Size from MUI func: ", mui_size, &
+           " MPI Size from MPI func with MUI_COMM_WORLD: ", num_procs, &
+           " MPI Size from MPI func with MPI_COMM_WORLD: ", total_procs
+  print *, "{", trim(appname),"}: MPI Rank from MUI func: ", mui_ranks, &
+           " MPI Rank from MPI func with MUI_COMM_WORLD: ", my_rank, &
+           " MPI Rank from MPI func with MPI_COMM_WORLD: ", total_rank
 
   do i=40,100,10
     u1(i) = 0.0

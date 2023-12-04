@@ -52,6 +52,8 @@ program main
 
     implicit none
 
+    include "mpif.h"
+
     ! MUI/MPI variables
     integer(c_int) :: num_interfaces = 2
     integer(c_int) :: outputInterval = 1
@@ -71,11 +73,11 @@ program main
     real(c_double) :: tolerance_sampler=1e-37_c_double
     type(c_ptr), target :: spatial_sampler_rbf_2d=c_null_ptr
     type(c_ptr), target :: temporal_sampler_exact_2d=c_null_ptr
-    integer :: mui_ranks, mui_size, ierr
+    integer :: mui_ranks, mui_size, ierr, my_rank, num_procs, total_rank, total_procs
     character(len=1024) :: numberSuffix
     character(:), allocatable, target :: interfaces(:)
     character(:), allocatable :: domain, name_fetchA, name_pushA
-    type(c_ptr) :: MUI_COMM_WORLD
+    integer(c_int) :: MUI_COMM_WORLD
 
     ! Local parameters
     integer(c_int) :: Ntx = 9
@@ -113,6 +115,19 @@ program main
     ! MUI/MPI get comm size & rank
     call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
     call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
+
+    call MPI_COMM_RANK(MUI_COMM_WORLD, my_rank, ierr)
+    call MPI_COMM_SIZE(MUI_COMM_WORLD, num_procs, ierr)
+
+    call MPI_COMM_RANK(MPI_COMM_WORLD, total_rank, ierr)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, total_procs, ierr)
+
+    print *, "MPI Size from MUI func: ", mui_size, &
+             " MPI Size from MPI func with MUI_COMM_WORLD: ", num_procs, &
+             " MPI Size from MPI func with MPI_COMM_WORLD: ", total_procs
+    print *, "MPI Rank from MUI func: ", mui_ranks, &
+             " MPI Rank from MPI func with MUI_COMM_WORLD: ", my_rank, &
+             " MPI Rank from MPI func with MPI_COMM_WORLD: ", total_rank
 
     if (mui_size > 2) then
         print *, "MPI Size larger than 2 does not supported yet."

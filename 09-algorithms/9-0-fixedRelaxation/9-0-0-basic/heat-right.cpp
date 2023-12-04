@@ -123,7 +123,7 @@ int main( int argc, char ** argv ) {
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor1d<double> s1(0.1);
     temporal_sampler_exact1d  s2;
-	algo_fixed_relaxation1d fr(0.01,ptsVluInit);
+	algo_fixed_relaxation1d fr(0.01,world,ptsVluInit);
 
      // Print off a hello world message
     printf("Hello world from Right rank %d out of %d MUI processors\n",
@@ -145,7 +145,8 @@ int main( int argc, char ** argv ) {
         printf( "Right grid iteration %d\n", iter );
 
             u[4] = interface.fetch( "u", 4 * H, iter, s1, s2, fr );
-
+			printf( "Right under relaxation factor at iter= %d is %f\n", iter, fr.get_under_relaxation_factor(iter));
+			printf( "Right residual L2 Norm at iter= %d is %f\n", iter, fr.get_residual_L2_Norm(iter));
             // calculate 'interior' points
             for ( int i = 5; i <  11; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );
             // calculate 'boundary' points

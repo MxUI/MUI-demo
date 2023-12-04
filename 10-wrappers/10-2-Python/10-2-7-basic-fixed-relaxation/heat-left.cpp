@@ -124,7 +124,7 @@ int main( int argc, char ** argv ) {
     // fetch data from the other solver
     sampler_pseudo_nearest_neighbor<demo7_config> s1(0.1);
     temporal_sampler_exact<demo7_config>  s2;
-    algo_fixed_relaxation<demo7_config> fr(0.01,ptsVluInit);
+    algo_fixed_relaxation<demo7_config> fr(0.01,world,ptsVluInit);
 
      // Print off a hello world message
     printf("Hello world from Left rank %d out of %d MUI processors\n",
@@ -151,6 +151,8 @@ int main( int argc, char ** argv ) {
 
             u[6] = interface.fetch( "u0", 6 * H, iter, s1, s2, fr );
 
+			printf( "Left under relaxation factor at iter= %d is %f\n", iter, fr.get_under_relaxation_factor(iter));
+			printf( "Left residual L2 Norm at iter= %d is %f\n", iter, fr.get_residual_L2_Norm(iter));
 
             // calculate 'interior' points
             for ( int i = 1; i <  6; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );

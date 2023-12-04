@@ -3,6 +3,7 @@ project(multi-interfaces-Fortran VERSION 1.0 DESCRIPTION "Multiscale Universal I
 
 # Set the Fortran standard
 set(CMAKE_Fortran_STANDARD 90)
+set(CMAKE_Fortran_COMPILER mpifort)
 
 set(MUI_BASE_FORTRAN_DIR "" CACHE PATH "Path to MUI base directory")
 set(MUI_FORTRAN_LIB_DIR "" CACHE PATH "Path to MUI FORTRAN library directory")

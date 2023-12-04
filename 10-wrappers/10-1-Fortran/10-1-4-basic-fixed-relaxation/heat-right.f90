@@ -61,16 +61,19 @@ program main
 
   implicit none
 
+  include "mpif.h"
+
   integer, parameter :: N = 11
   double precision :: u1(N), u2(N), k = 0.515, H = 1.0, rSearch = 1.0, tolerance = 8.0e-1
-  type(c_ptr), target :: MUI_COMM_WORLD=c_null_ptr
-  integer :: mui_ranks, mui_size, ierr, status, i, j, iter, pair_count
+  integer(c_int) ::  MUI_COMM_WORLD
+  integer :: mui_ranks, mui_size, ierr, status, i, j, iter, pair_count, my_rank, num_procs, total_rank, total_procs
   type(c_ptr), target :: uniface_1d_f=c_null_ptr
   type(c_ptr), target :: mui_sampler_pseudo_nearest_neighbor_1d_f=c_null_ptr
   type(c_ptr), target :: mui_temporal_sampler_exact_1d_f=c_null_ptr
   type(c_ptr), target :: mui_algorithm_fixed_relaxation_1d_f=c_null_ptr
 
   real(c_double), dimension (:), allocatable :: pp, value_init, u, v, tempValue
+  real(c_double) :: underRelax,resL2Norm
   character(len=1024) :: appname = "right"
   character(len=1024) :: uriheader = "mpi://"
   character(len=1024) :: uridomain = "/ifs"
@@ -95,7 +98,19 @@ program main
   ! MUI/MPI get comm size & rank
   call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
   call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
-  print *, "{", trim(appname),"}: COMM_SIZE: ", mui_size, "COMM_RANK: ", mui_ranks
+
+  call MPI_COMM_RANK(MUI_COMM_WORLD, my_rank, ierr)
+  call MPI_COMM_SIZE(MUI_COMM_WORLD, num_procs, ierr)
+
+  call MPI_COMM_RANK(MPI_COMM_WORLD, total_rank, ierr)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD, total_procs, ierr)
+
+  print *, "{", trim(appname),"}: MPI Size from MUI func: ", mui_size, &
+           " MPI Size from MPI func with MUI_COMM_WORLD: ", num_procs, &
+           " MPI Size from MPI func with MPI_COMM_WORLD: ", total_procs
+  print *, "{", trim(appname),"}: MPI Rank from MUI func: ", mui_ranks, &
+           " MPI Rank from MPI func with MUI_COMM_WORLD: ", my_rank, &
+           " MPI Rank from MPI func with MPI_COMM_WORLD: ", total_rank
 
   do i = 4, 10
     u1(i) = 0.0
@@ -129,7 +144,8 @@ program main
   ! MUI define spatial and temporal samplers
   call mui_create_sampler_pseudo_nearest_neighbor_1d_f(mui_sampler_pseudo_nearest_neighbor_1d_f, rSearch)
   call mui_create_temporal_sampler_exact_1d_f(mui_temporal_sampler_exact_1d_f, tolerance)
-  call mui_create_algorithm_fixed_relaxation_1d_f(mui_algorithm_fixed_relaxation_1d_f, DBLE(0.01), pp, value_init, pair_count)
+  call mui_create_algorithm_fixed_relaxation_1d_f(mui_algorithm_fixed_relaxation_1d_f, DBLE(0.01), & 
+                                                  MUI_COMM_WORLD, pp, value_init, pair_count)
 
   ! Create the file name
   write(fileWriteName, "(a, i0, a)") "results_right", mui_ranks, "/solution-right_FR_0.csv"
@@ -154,6 +170,14 @@ program main
                                    trim(name_fetch)//c_null_char, 4 * H, real(iter, c_double), &
                                     mui_sampler_pseudo_nearest_neighbor_1d_f,  &
                                     mui_temporal_sampler_exact_1d_f,mui_algorithm_fixed_relaxation_1d_f, u(4))
+
+    call mui_fixed_relaxation_get_under_relaxation_factor_1d_f(mui_algorithm_fixed_relaxation_1d_f,  &
+                                        real(iter, c_double), underRelax)
+    call mui_fixed_relaxation_get_residual_1d_f(mui_algorithm_fixed_relaxation_1d_f,  &
+                                        real(iter, c_double), resL2Norm)
+
+    write(*,*) "Right under relaxation factor at iter= ", iter, " is ", underRelax
+    write(*,*) "Right residual L2 Norm at iter= ", iter, " is ", resL2Norm
 
     ! calculate 'interior' points
     do i = 5, 10

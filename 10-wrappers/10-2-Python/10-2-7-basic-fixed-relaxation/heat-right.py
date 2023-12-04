@@ -113,7 +113,7 @@ for i in range(4, 11):
 # Samplers
 t_sampler = mui4py.TemporalSamplerExact()
 s_sampler = mui4py.SamplerPseudoNearestNeighbor(0.1)
-fr_algorithm = mui4py.AlgorithmFixedRelaxation(0.01,ptsVluInit)
+fr_algorithm = mui4py.AlgorithmFixedRelaxation(0.01,MUI_COMM_WORLD,ptsVluInit)
 
 # Print off a hello world message
 print("Hello world from Right rank ", rank, " out of ", size, " MUI processors\n")
@@ -128,6 +128,9 @@ with open(filenameR, "w") as outputFileRight:
 for iter in range(1, 1001):
     print(f"Right grid iteration {iter}")
     u1[4] = iface.fetch("u", 4 * H, iter, s_sampler, t_sampler, fr_algorithm)
+
+    print(f"Right under relaxation factor at iter= {iter} is {iface.get_latest_fixed_relaxation_under_relaxation_factor()}")
+    print(f"Right residual L2 Norm at iter= {iter} is {iface.get_latest_fixed_relaxation_residual_l2_norm()}")
 
     # calculate 'interior' points
     for i in range(5, 10):

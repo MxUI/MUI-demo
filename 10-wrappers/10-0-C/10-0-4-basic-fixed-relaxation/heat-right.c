@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
 	// Create spatial and temporal samplers for fetch operation
     mui_sampler_pseudo_nearest_neighbor_1d *spatial_sampler1d = mui_create_sampler_pseudo_nearest_neighbor_1d(10.0);
 	mui_temporal_sampler_exact_1d *temporal_sampler1d = mui_create_temporal_sampler_exact_1d(1.0);
-	mui_algorithm_fixed_relaxation_1d *algorithm1d = mui_create_algorithm_fixed_relaxation_1d(0.01, points, value_init, pair_count);
+	mui_algorithm_fixed_relaxation_1d *algorithm1d = mui_create_algorithm_fixed_relaxation_1d(0.01, MUI_COMM_WORLD, points, value_init, pair_count);
 
 	// Output
 	char fileName[100];
@@ -167,6 +167,9 @@ int main(int argc, char **argv) {
 		// MUI fetch points
 		mui_point_1d point_fetch={4 * H};
 		u[4] = mui_fetch_pseudo_nearest_neighbor_exact_fixed_relaxation_1d(uniface1d, fetch_name, point_fetch, iter, spatial_sampler1d, temporal_sampler1d, algorithm1d);
+
+		printf( "Right under relaxation factor at iter= %d is %f\n", iter, mui_fixed_relaxation_get_under_relaxation_factor_1d(algorithm1d,iter));
+		printf( "Right residual L2 Norm at iter= %d is %f\n", iter, mui_fixed_relaxation_get_residual_L2_Norm_1d(algorithm1d,iter));
 
         // calculate 'interior' points
         for ( int i = 5; i <  11; i++ ) v[i] = u[i] + k / ( H * H ) * ( u[i - 1] + u[i + 1] - 2 * u[i] );

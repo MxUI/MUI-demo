@@ -52,15 +52,17 @@ program main
 
   implicit none
 
+  include "mpif.h"
+
   ! MUI/MPI variables
   real(c_double) :: zero=0.0_c_double
   real(c_double) :: tolerance=8e-1_c_double
   integer :: reset_log = 1
   integer :: upper_forget = 5
   integer :: synchronised = 1
-  integer :: mui_ranks, mui_size
+  integer :: mui_ranks, mui_size, ierr, my_rank, num_procs, total_rank, total_procs
   character(len=1024) :: URI
-  type(c_ptr), target :: MUI_COMM_WORLD=c_null_ptr
+  integer(c_int) :: MUI_COMM_WORLD
   type(c_ptr), target :: uniface_3d_f=c_null_ptr
   type(c_ptr), target :: spatial_sampler_pseudo_n2_linear_3d_f=c_null_ptr
   type(c_ptr), target :: temporal_sampler_exact_3d_f=c_null_ptr
@@ -94,17 +96,29 @@ program main
   ! Call mui_mpi_split_by_app_f() function to init MPI
   call mui_mpi_split_by_app_f(MUI_COMM_WORLD)
 
+  ! MUI/MPI get comm size & rank
+  call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
+  call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
+
+  call MPI_COMM_RANK(MUI_COMM_WORLD, my_rank, ierr)
+  call MPI_COMM_SIZE(MUI_COMM_WORLD, num_procs, ierr)
+
+  call MPI_COMM_RANK(MPI_COMM_WORLD, total_rank, ierr)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD, total_procs, ierr)
+
+  print *, "{", trim(appname),"}: MPI Size from MUI func: ", mui_size, &
+           " MPI Size from MPI func with MUI_COMM_WORLD: ", num_procs, &
+           " MPI Size from MPI func with MPI_COMM_WORLD: ", total_procs
+  print *, "{", trim(appname),"}: MPI Rank from MUI func: ", mui_ranks, &
+           " MPI Rank from MPI func with MUI_COMM_WORLD: ", my_rank, &
+           " MPI Rank from MPI func with MPI_COMM_WORLD: ", total_rank
+
   ! MUI set URL
   URI = trim(uriheader)//trim(appname)//trim(uridomain)
   print *, "{", trim(appname),"}: URI: ", trim(URI)
 
   ! MUI set uniface
   call mui_create_uniface_3d_f(uniface_3d_f, trim(URI)//c_null_char)
-
-  ! MUI/MPI get comm size & rank
-  call mui_mpi_get_size_f(MUI_COMM_WORLD, mui_size)
-  call mui_mpi_get_rank_f(MUI_COMM_WORLD, mui_ranks)
-  print *, "{", trim(appname),"}: COMM_SIZE: ", mui_size, "COMM_RANK: ", mui_ranks
 
   ! Define spatial and temporal samplers
   call mui_create_sampler_pseudo_n2_linear_3d_f(spatial_sampler_pseudo_n2_linear_3d_f, rSearch)
